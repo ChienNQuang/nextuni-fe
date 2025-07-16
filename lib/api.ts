@@ -46,10 +46,11 @@ export interface CounsellingArticle {
 }
 
 export interface Event {
+  name: string
   id: string
   title: string
   content: string
-  status: "Pending" | "Published" | "Cancelled" | "Ongoing" | "Rejected" | "Completed"
+  status: number
   universityId: string
   startDate: string
   endDate: string
@@ -88,6 +89,12 @@ export class ApiService {
 
   static async getUniversityById(id: string) {
     return this.request(`/universities/${id}`)
+  }
+
+  static async getUniversityConsellingArticles(universityId: string, status: string, pageNumber = 1, pageSize = 10) {
+    return this.request(
+      `/universities/${universityId}/university-counselling-articles/${status}?pageNumber=${pageNumber}&pageSize=${pageSize}`,
+    )
   }
 
   static async createUniversity(data: Partial<University>) {

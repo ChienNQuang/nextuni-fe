@@ -28,7 +28,7 @@ export function StudentLayout({ children }: { children: React.ReactNode }) {
     if (!selectedRegion) {
       setSelectedRegion("North")
     }
-    router.push(`/student/universities?region=${selectedRegion || "North"}`)
+    router.push(`/student/universities?region=${selectedRegion || 0}`)
   }
 
   const handleAdmissionInfoClick = () => {
@@ -64,16 +64,6 @@ export function StudentLayout({ children }: { children: React.ReactNode }) {
               </Link>
 
               <div className="flex items-center space-x-2">
-                <Select value={selectedRegion} onValueChange={setSelectedRegion}>
-                  <SelectTrigger className="w-32">
-                    <SelectValue placeholder="Region" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="North">North</SelectItem>
-                    <SelectItem value="Middle">Middle</SelectItem>
-                    <SelectItem value="South">South</SelectItem>
-                  </SelectContent>
-                </Select>
                 <Button variant="ghost" onClick={handleUniversitiesClick} className="text-gray-700 hover:text-blue-600">
                   <Building2 className="inline-block w-4 h-4 mr-2" />
                   Universities
@@ -93,15 +83,6 @@ export function StudentLayout({ children }: { children: React.ReactNode }) {
               </Link>
 
               <div className="flex items-center space-x-2">
-                <Select value={selectedArticleSource} onValueChange={setSelectedArticleSource}>
-                  <SelectTrigger className="w-32">
-                    <SelectValue placeholder="Source" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="system">System</SelectItem>
-                    <SelectItem value="university">University</SelectItem>
-                  </SelectContent>
-                </Select>
                 <Button
                   variant="ghost"
                   onClick={handleAdmissionInfoClick}

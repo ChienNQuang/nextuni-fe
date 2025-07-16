@@ -43,19 +43,19 @@ export default function StudentEventsPage() {
     }
   }
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: number) => {
     switch (status) {
-      case "Published":
+      case 0:
         return <Badge variant="default">Published</Badge>
-      case "Ongoing":
+      case 1:
         return (
           <Badge variant="outline" className="border-blue-500 text-blue-700">
             Ongoing
           </Badge>
         )
-      case "Cancelled":
+      case 2:
         return <Badge variant="destructive">Cancelled</Badge>
-      case "Completed":
+      case 3:
         return <Badge variant="secondary">Completed</Badge>
       default:
         return <Badge variant="outline">Unknown</Badge>
@@ -63,7 +63,7 @@ export default function StudentEventsPage() {
   }
 
   const canRegister = (event: Event) => {
-    return event.status === "Published" && new Date(event.startDate) > new Date()
+    return event.status === 0 && new Date(event.startDate) > new Date()
   }
 
   if (loading) {
@@ -109,7 +109,7 @@ export default function StudentEventsPage() {
                     {getStatusBadge(event.status)}
                   </div>
                   <CardTitle className="line-clamp-2">{event.title}</CardTitle>
-                  <CardDescription className="line-clamp-3">{event.content}</CardDescription>
+                  <CardDescription className="line-clamp-3">{event.name}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2 text-sm text-gray-600">

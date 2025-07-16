@@ -15,27 +15,77 @@ export default function StudentUniversitiesPage() {
   const searchParams = useSearchParams()
   const [universities, setUniversities] = useState<University[]>([])
   const [loading, setLoading] = useState(true)
-  const [selectedRegion, setSelectedRegion] = useState(searchParams.get("region") || "North")
+  const [selectedRegion, setSelectedRegion] = useState(
+    searchParams.get("region") ? parseInt(searchParams.get("region")!) : 0
+  )
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+  const [allUniversities, setAllUniversities] = useState<University[]>([])
+
+  const itemsPerPage = 12
 
   useEffect(() => {
     fetchUniversities()
-  }, [selectedRegion, currentPage])
+  }, [])
+
+  useEffect(() => {
+    // Reset to page 1 when region changes
+    setCurrentPage(1)
+    filterAndPaginateUniversities()
+  }, [selectedRegion, allUniversities])
+
+  useEffect(() => {
+    filterAndPaginateUniversities()
+  }, [currentPage])
 
   const fetchUniversities = async () => {
     try {
-      const response = await ApiService.getUniversities(currentPage, 12, 0)
-      // Filter by region (in a real app, this would be done server-side)
-      const filteredUniversities =
-        response.data?.items?.filter((uni: University) => uni.region === selectedRegion) || []
-      setUniversities(filteredUniversities)
-      setTotalPages(Math.ceil(filteredUniversities.length / 12))
+      setLoading(true)
+      // Fetch all universities (you might want to implement server-side filtering)
+      const response = await ApiService.getUniversities(1, 1000, 0) // Fetch a large number to get all
+      setAllUniversities(response.data?.items || [])
     } catch (error) {
       console.error("Failed to fetch universities:", error)
     } finally {
       setLoading(false)
     }
+  }
+
+  const filterAndPaginateUniversities = () => {
+    // Filter universities by selected region
+    const filteredUniversities = allUniversities.filter(
+      (uni: University) => Number(uni.region) === selectedRegion
+    )
+
+    // Calculate pagination
+    const totalFilteredItems = filteredUniversities.length
+    const calculatedTotalPages = Math.ceil(totalFilteredItems / itemsPerPage)
+    setTotalPages(calculatedTotalPages)
+
+    // Get universities for current page
+    const startIndex = (currentPage - 1) * itemsPerPage
+    const endIndex = startIndex + itemsPerPage
+    const paginatedUniversities = filteredUniversities.slice(startIndex, endIndex)
+
+    setUniversities(paginatedUniversities)
+  }
+
+  const getRegionName = (region: number) => {
+    switch (region) {
+      case 0:
+        return "North"
+      case 1:
+        return "Middle"
+      case 2:
+        return "South"
+      default:
+        return "Unknown"
+    }
+  }
+
+  const handleRegionChange = (newRegion: string) => {
+    setSelectedRegion(parseInt(newRegion))
+    // currentPage will be reset to 1 in the useEffect
   }
 
   const getTypeName = (type: number) => {
@@ -82,16 +132,16 @@ export default function StudentUniversitiesPage() {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Universities</h1>
-              <p className="text-gray-600">Explore universities in the {selectedRegion} region</p>
+              <p className="text-gray-600">Explore universities in the {getRegionName(selectedRegion)} region</p>
             </div>
-            <Select value={selectedRegion} onValueChange={setSelectedRegion}>
+            <Select value={selectedRegion.toString()} onValueChange={handleRegionChange}>
               <SelectTrigger className="w-48">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="North">North</SelectItem>
-                <SelectItem value="Middle">Middle</SelectItem>
-                <SelectItem value="South">South</SelectItem>
+                <SelectItem value="0">North</SelectItem>
+                <SelectItem value="1">Middle</SelectItem>
+                <SelectItem value="2">South</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -108,7 +158,7 @@ export default function StudentUniversitiesPage() {
                   <CardTitle className="line-clamp-2">{university.name}</CardTitle>
                   <CardDescription className="flex items-center">
                     <MapPin className="mr-1 h-4 w-4" />
-                    {university.region}
+                    {getRegionName(Number(university.region))}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -121,12 +171,12 @@ export default function StudentUniversitiesPage() {
             ))}
           </div>
 
-          {universities.length === 0 && (
+          {universities.length === 0 && !loading && (
             <div className="text-center py-12">
               <Building2 className="mx-auto h-12 w-12 text-gray-400" />
               <h3 className="mt-2 text-sm font-medium text-gray-900">No universities found</h3>
               <p className="mt-1 text-sm text-gray-500">
-                No universities are available in the {selectedRegion} region.
+                No universities are available in the {getRegionName(selectedRegion)} region.
               </p>
             </div>
           )}
