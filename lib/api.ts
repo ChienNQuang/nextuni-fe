@@ -1,8 +1,20 @@
+export enum UniversityRegion {
+  North = 0,
+  Middle = 1,
+  South = 2,
+}
+
+export enum UniversityType {
+  Public = 0,
+  Private = 1,
+  International = 2,
+}
+
 export interface University {
   id: string
   name: string
-  region: "North" | "Middle" | "South"
-  type: number
+  region: UniversityRegion
+  type: UniversityType
   status: number
   title?: string
   content?: string
@@ -56,10 +68,15 @@ export interface Event {
   endDate: string
 }
 
+export interface ApiResult<T> {
+  isSuccess: boolean
+  data: T
+}
+
 export class ApiService {
   private static baseUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.nextuni.com"
 
-  static async request(endpoint: string, options: RequestInit = {}) {
+  static async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResult<T>> {
     const token = localStorage.getItem("token")
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       ...options,

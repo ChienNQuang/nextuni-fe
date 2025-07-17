@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
 
     // Call the actual chatbot API
     try {
-      const response = await fetch(`${process.env.API_BASE_URL}/chatbot?prompt=${encodeURIComponent(message)}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chatbot?prompt=${encodeURIComponent(message)}`, {
         headers: {
           Authorization: `Bearer ${request.headers.get("authorization")?.replace("Bearer ", "")}`,
         },
