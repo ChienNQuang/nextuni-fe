@@ -48,7 +48,7 @@ export function AddStaffDialog({ open, onOpenChange, universityId, onSuccess }: 
 
     try {
       setLoading(true)
-      await ApiService.createStaffAccount({
+      const result = await ApiService.createStaffAccount({
         ...formData,
         universityId,
       })
@@ -56,9 +56,24 @@ export function AddStaffDialog({ open, onOpenChange, universityId, onSuccess }: 
       setFormData({ email: "", password: "", firstName: "", lastName: "", phoneNumber: "" })
       onOpenChange(false)
       onSuccess()
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to create staff account:", error)
-      toast.error("Failed to create staff account")
+      
+      // Handle API validation errors
+      if (error.response?.data?.errors?.length > 0) {
+        // Show each validation error
+        error.response.data.errors.forEach((err: { description: string }) => {
+          toast.error(err.description)
+        })
+      } 
+      // Handle other API errors
+      else if (error.response?.data?.title || error.response?.data?.detail) {
+        toast.error(error.response.data.detail || error.response.data.title)
+      }
+      // Fallback error message
+      else {
+        toast.error("Failed to create staff account. Please try again.")
+      }
     } finally {
       setLoading(false)
     }

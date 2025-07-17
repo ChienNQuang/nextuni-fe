@@ -1,0 +1,3312 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "NextUni API",
+    "description": "NextUni API built using the modular monolith architecture.",
+    "version": "v1"
+  },
+  "paths": {
+    "/chatbot": {
+      "get": {
+        "tags": [
+          "Chatbot"
+        ],
+        "parameters": [
+          {
+            "name": "prompt",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/events/approve/{id}": {
+      "put": {
+        "tags": [
+          "Events"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/events/cancel/{id}": {
+      "put": {
+        "tags": [
+          "Events"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/events": {
+      "post": {
+        "tags": [
+          "Events"
+        ],
+        "operationId": "CreateEvent",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NextUni.Modules.Events.Api.Events.CreateEvent.Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/event-by-id/{id}": {
+      "get": {
+        "tags": [
+          "Events"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[NextUni.Modules.Events.Application.Events.GetEventById.GetEventById.Response, NextUni.Modules.Events.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/events/{status}": {
+      "get": {
+        "tags": [
+          "Events"
+        ],
+        "parameters": [
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "status",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[NextUni.Common.Domain.Page`1[[NextUni.Modules.Events.Application.Events.GetEvents.GetEvents.Response, NextUni.Modules.Events.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], NextUni.Common.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/events/{status}": {
+      "get": {
+        "tags": [
+          "Events"
+        ],
+        "parameters": [
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "status",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[NextUni.Common.Domain.Page`1[[NextUni.Modules.Events.Application.Events.GetEvents.GetEvents.Response, NextUni.Modules.Events.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], NextUni.Common.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/staff/universities/{universityId}/events/{status}": {
+      "get": {
+        "tags": [
+          "Events"
+        ],
+        "parameters": [
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "status",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "universityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[NextUni.Common.Domain.Page`1[[NextUni.Modules.Events.Application.Events.GetEventsByUniversity.GetEventByUniversity.Response, NextUni.Modules.Events.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], NextUni.Common.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/events/reject/{id}": {
+      "put": {
+        "tags": [
+          "Events"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/event-registrations/{id}/cancel": {
+      "put": {
+        "tags": [
+          "Events"
+        ],
+        "operationId": "CancelEventRegistration",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/event-registrations/{id}": {
+      "post": {
+        "tags": [
+          "Events"
+        ],
+        "operationId": "CreateEventRegistration",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/subjects": {
+      "post": {
+        "tags": [
+          "Major"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NextUni.Modules.Academic.Api.Subjects.CreateSubject.Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Major"
+        ],
+        "parameters": [
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[NextUni.Common.Domain.Page`1[[NextUni.Modules.Academic.Application.Subjects.GetSubjects.GetSubjects.ResponseItem, NextUni.Modules.Academic.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], NextUni.Common.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/subjects": {
+      "get": {
+        "tags": [
+          "Major"
+        ],
+        "parameters": [
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[NextUni.Common.Domain.Page`1[[NextUni.Modules.Academic.Application.Subjects.GetSubjects.GetSubjects.ResponseItem, NextUni.Modules.Academic.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], NextUni.Common.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/subjects/{subjectId}": {
+      "delete": {
+        "tags": [
+          "Major"
+        ],
+        "parameters": [
+          {
+            "name": "subjectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/subjects/{id}": {
+      "put": {
+        "tags": [
+          "Major"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NextUni.Modules.Academic.Api.Subjects.UpdateSubject.Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/majors/admission-scores": {
+      "post": {
+        "tags": [
+          "Major"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NextUni.Modules.Academic.Api.Majors.CreateAdmissionScoreByYear.Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/majors": {
+      "post": {
+        "tags": [
+          "Major"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NextUni.Modules.Academic.Api.Majors.CreateMajor.Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/universities/{universityId}/majors/admission-scores/{year}": {
+      "get": {
+        "tags": [
+          "Major"
+        ],
+        "parameters": [
+          {
+            "name": "year",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "universityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/universities/{universityId}/majors": {
+      "get": {
+        "tags": [
+          "Major"
+        ],
+        "parameters": [
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "universityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[NextUni.Common.Domain.Page`1[[NextUni.Modules.Academic.Application.Majors.GetMajors.GetMajors.MajorResponse, NextUni.Modules.Academic.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], NextUni.Common.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/universities/{universityId}/majors": {
+      "get": {
+        "tags": [
+          "Major"
+        ],
+        "parameters": [
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "universityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[NextUni.Common.Domain.Page`1[[NextUni.Modules.Academic.Application.Majors.GetMajors.GetMajors.MajorResponse, NextUni.Modules.Academic.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], NextUni.Common.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/majors/status/{id}": {
+      "put": {
+        "tags": [
+          "Major"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/majors/{id}": {
+      "put": {
+        "tags": [
+          "Major"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NextUni.Modules.Academic.Api.Majors.UpdateMajor.Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/majors/{majorId}/subject-groups/{year}": {
+      "post": {
+        "tags": [
+          "Major"
+        ],
+        "parameters": [
+          {
+            "name": "majorId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "year",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NextUni.Modules.Academic.Api.Majors.UpdateMajorSubjectGroupByYear.Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/subject-groups": {
+      "post": {
+        "tags": [
+          "SubjectGroup"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NextUni.Modules.Academic.Api.SubjectGroups.CreateSubjectGroup.Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "SubjectGroup"
+        ],
+        "parameters": [
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[NextUni.Common.Domain.Page`1[[NextUni.Modules.Academic.Application.SubjectGroups.GetSubjectGroups.GetSubjectGroups.Response, NextUni.Modules.Academic.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], NextUni.Common.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/subject-groups": {
+      "get": {
+        "tags": [
+          "SubjectGroup"
+        ],
+        "parameters": [
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[NextUni.Common.Domain.Page`1[[NextUni.Modules.Academic.Application.SubjectGroups.GetSubjectGroups.GetSubjectGroups.Response, NextUni.Modules.Academic.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], NextUni.Common.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/subject-groups/{id}": {
+      "put": {
+        "tags": [
+          "SubjectGroup"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NextUni.Modules.Academic.Api.SubjectGroups.UpdateSubjectGroup.Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/master-counselling-articles": {
+      "post": {
+        "tags": [
+          "System Content"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NextUni.Modules.Contents.Api.MasterCounsellingArticles.CreateMasterCounsellingArticle.Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "System Content"
+        ],
+        "parameters": [
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[NextUni.Common.Domain.Page`1[[NextUni.Modules.Contents.Application.GetMasterCounsellingArticles.GetMasterCounsellingArticles.Response, NextUni.Modules.Contents.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], NextUni.Common.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/master-counselling-articles": {
+      "get": {
+        "tags": [
+          "System Content"
+        ],
+        "parameters": [
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[NextUni.Common.Domain.Page`1[[NextUni.Modules.Contents.Application.GetMasterCounsellingArticles.GetMasterCounsellingArticles.Response, NextUni.Modules.Contents.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], NextUni.Common.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/universities": {
+      "post": {
+        "tags": [
+          "University"
+        ],
+        "operationId": "CreateUniversity",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NextUni.Modules.Academic.Api.Universities.CreateUniversity.Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "University"
+        ],
+        "parameters": [
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "queryFilter",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/NextUni.Modules.Academic.Application.Universities.GetUniversities.GetUniversity.QueryFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[NextUni.Common.Domain.Page`1[[NextUni.Modules.Academic.Application.Universities.GetUniversities.GetUniversity.ResponseItem, NextUni.Modules.Academic.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], NextUni.Common.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "University"
+        ],
+        "operationId": "UpdateUniversity",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NextUni.Modules.Academic.Api.Universities.UpdateUniversity.Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/universities": {
+      "get": {
+        "tags": [
+          "University"
+        ],
+        "parameters": [
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "queryFilter",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/NextUni.Modules.Academic.Application.Universities.GetUniversities.GetUniversity.QueryFilter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[NextUni.Common.Domain.Page`1[[NextUni.Modules.Academic.Application.Universities.GetUniversities.GetUniversity.ResponseItem, NextUni.Modules.Academic.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], NextUni.Common.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/universities/{id}": {
+      "get": {
+        "tags": [
+          "University"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[NextUni.Modules.Academic.Application.Universities.GetUniversityById.GetUniversityId.ResponseItem, NextUni.Modules.Academic.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/universities/{id}": {
+      "get": {
+        "tags": [
+          "University"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[NextUni.Modules.Academic.Application.Universities.GetUniversityById.GetUniversityId.ResponseItem, NextUni.Modules.Academic.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/universities/status/{id}": {
+      "put": {
+        "tags": [
+          "University"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/university-counselling-articles/approve/{id}": {
+      "put": {
+        "tags": [
+          "University Content"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/university-counselling-articles": {
+      "post": {
+        "tags": [
+          "University Content"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NextUni.Modules.Contents.Api.UniversityCounsellingArticles.CreateUniversityCounsellingArticle.Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/universities/{universityId}/university-counselling-articles/{status}": {
+      "get": {
+        "tags": [
+          "University Content"
+        ],
+        "parameters": [
+          {
+            "name": "universityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "status",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[NextUni.Common.Domain.Page`1[[NextUni.Modules.Contents.Application.GetCounsellingArticlesByUniversity.GetCounsellingArticlesByUniversity.Response, NextUni.Modules.Contents.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], NextUni.Common.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/universities/{universityId}/university-counselling-articles/{status}": {
+      "get": {
+        "tags": [
+          "University Content"
+        ],
+        "parameters": [
+          {
+            "name": "universityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "status",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[NextUni.Common.Domain.Page`1[[NextUni.Modules.Contents.Application.GetCounsellingArticlesByUniversity.GetCounsellingArticlesByUniversity.Response, NextUni.Modules.Contents.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], NextUni.Common.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/university-counselling-articles/{status}": {
+      "get": {
+        "tags": [
+          "University Content"
+        ],
+        "parameters": [
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[NextUni.Common.Domain.Page`1[[NextUni.Modules.Contents.Application.GetUniversityCounsellingArticles.GetUniversityCounsellingArticles.Response, NextUni.Modules.Contents.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], NextUni.Common.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/university-counselling-articles/{status}": {
+      "get": {
+        "tags": [
+          "University Content"
+        ],
+        "parameters": [
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "status",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[NextUni.Common.Domain.Page`1[[NextUni.Modules.Contents.Application.GetUniversityCounsellingArticles.GetUniversityCounsellingArticles.Response, NextUni.Modules.Contents.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], NextUni.Common.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/staff/university-counselling-articles/{status}": {
+      "get": {
+        "tags": [
+          "University Content"
+        ],
+        "parameters": [
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "status",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[NextUni.Common.Domain.Page`1[[NextUni.Modules.Contents.Application.GetUniversityCounsellingArticles.GetUniversityCounsellingArticles.Response, NextUni.Modules.Contents.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], NextUni.Common.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/university-counselling-articles/hide-unhide/{id}": {
+      "put": {
+        "tags": [
+          "University Content"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/university-counselling-articles/reject/{id}": {
+      "put": {
+        "tags": [
+          "University Content"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/university-counselling-articles/submit/{id}": {
+      "put": {
+        "tags": [
+          "University Content"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/current-user": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[NextUni.Modules.Users.Application.Users.GetCurrentUser.GetCurrentUser.Response, NextUni.Modules.Users.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/login": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NextUni.Modules.Users.Api.Users.Login.Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[NextUni.Modules.Users.Application.Users.LoginUser.Login.TokenResponse, NextUni.Modules.Users.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/register": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NextUni.Modules.Users.Api.Users.RegisterUser.Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/staffs/create-account": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NextUni.Modules.Users.Api.Staffs.CreateStaffAccount.Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/universities/{universityId}/staff-account": {
+      "delete": {
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "name": "universityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Common.Api.Results.ApiResult`1[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/universities/{universityId}/staff": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "name": "universityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextUni.Modules.Users.Application.Staffs.GetStaffAccountByUniversity.GetStaffAccountByUniversity.Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "NextUni.Common.Api.Results.ApiResult`1[[NextUni.Common.Domain.Page`1[[NextUni.Modules.Academic.Application.Majors.GetMajors.GetMajors.MajorResponse, NextUni.Modules.Academic.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], NextUni.Common.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "object",
+        "properties": {
+          "isSuccess": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/NextUni.Common.Domain.Page`1[[NextUni.Modules.Academic.Application.Majors.GetMajors.GetMajors.MajorResponse, NextUni.Modules.Academic.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Common.Api.Results.ApiResult`1[[NextUni.Common.Domain.Page`1[[NextUni.Modules.Academic.Application.SubjectGroups.GetSubjectGroups.GetSubjectGroups.Response, NextUni.Modules.Academic.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], NextUni.Common.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "object",
+        "properties": {
+          "isSuccess": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/NextUni.Common.Domain.Page`1[[NextUni.Modules.Academic.Application.SubjectGroups.GetSubjectGroups.GetSubjectGroups.Response, NextUni.Modules.Academic.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Common.Api.Results.ApiResult`1[[NextUni.Common.Domain.Page`1[[NextUni.Modules.Academic.Application.Subjects.GetSubjects.GetSubjects.ResponseItem, NextUni.Modules.Academic.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], NextUni.Common.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "object",
+        "properties": {
+          "isSuccess": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/NextUni.Common.Domain.Page`1[[NextUni.Modules.Academic.Application.Subjects.GetSubjects.GetSubjects.ResponseItem, NextUni.Modules.Academic.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Common.Api.Results.ApiResult`1[[NextUni.Common.Domain.Page`1[[NextUni.Modules.Academic.Application.Universities.GetUniversities.GetUniversity.ResponseItem, NextUni.Modules.Academic.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], NextUni.Common.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "object",
+        "properties": {
+          "isSuccess": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/NextUni.Common.Domain.Page`1[[NextUni.Modules.Academic.Application.Universities.GetUniversities.GetUniversity.ResponseItem, NextUni.Modules.Academic.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Common.Api.Results.ApiResult`1[[NextUni.Common.Domain.Page`1[[NextUni.Modules.Contents.Application.GetCounsellingArticlesByUniversity.GetCounsellingArticlesByUniversity.Response, NextUni.Modules.Contents.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], NextUni.Common.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "object",
+        "properties": {
+          "isSuccess": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/NextUni.Common.Domain.Page`1[[NextUni.Modules.Contents.Application.GetCounsellingArticlesByUniversity.GetCounsellingArticlesByUniversity.Response, NextUni.Modules.Contents.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Common.Api.Results.ApiResult`1[[NextUni.Common.Domain.Page`1[[NextUni.Modules.Contents.Application.GetMasterCounsellingArticles.GetMasterCounsellingArticles.Response, NextUni.Modules.Contents.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], NextUni.Common.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "object",
+        "properties": {
+          "isSuccess": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/NextUni.Common.Domain.Page`1[[NextUni.Modules.Contents.Application.GetMasterCounsellingArticles.GetMasterCounsellingArticles.Response, NextUni.Modules.Contents.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Common.Api.Results.ApiResult`1[[NextUni.Common.Domain.Page`1[[NextUni.Modules.Contents.Application.GetUniversityCounsellingArticles.GetUniversityCounsellingArticles.Response, NextUni.Modules.Contents.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], NextUni.Common.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "object",
+        "properties": {
+          "isSuccess": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/NextUni.Common.Domain.Page`1[[NextUni.Modules.Contents.Application.GetUniversityCounsellingArticles.GetUniversityCounsellingArticles.Response, NextUni.Modules.Contents.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Common.Api.Results.ApiResult`1[[NextUni.Common.Domain.Page`1[[NextUni.Modules.Events.Application.Events.GetEvents.GetEvents.Response, NextUni.Modules.Events.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], NextUni.Common.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "object",
+        "properties": {
+          "isSuccess": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/NextUni.Common.Domain.Page`1[[NextUni.Modules.Events.Application.Events.GetEvents.GetEvents.Response, NextUni.Modules.Events.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Common.Api.Results.ApiResult`1[[NextUni.Common.Domain.Page`1[[NextUni.Modules.Events.Application.Events.GetEventsByUniversity.GetEventByUniversity.Response, NextUni.Modules.Events.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], NextUni.Common.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "object",
+        "properties": {
+          "isSuccess": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/NextUni.Common.Domain.Page`1[[NextUni.Modules.Events.Application.Events.GetEventsByUniversity.GetEventByUniversity.Response, NextUni.Modules.Events.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Common.Api.Results.ApiResult`1[[NextUni.Modules.Academic.Application.Universities.GetUniversityById.GetUniversityId.ResponseItem, NextUni.Modules.Academic.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "object",
+        "properties": {
+          "isSuccess": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/NextUni.Modules.Academic.Application.Universities.GetUniversityById.GetUniversityId.ResponseItem"
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Common.Api.Results.ApiResult`1[[NextUni.Modules.Events.Application.Events.GetEventById.GetEventById.Response, NextUni.Modules.Events.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "object",
+        "properties": {
+          "isSuccess": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/NextUni.Modules.Events.Application.Events.GetEventById.GetEventById.Response"
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Common.Api.Results.ApiResult`1[[NextUni.Modules.Users.Application.Users.GetCurrentUser.GetCurrentUser.Response, NextUni.Modules.Users.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "object",
+        "properties": {
+          "isSuccess": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/NextUni.Modules.Users.Application.Users.GetCurrentUser.GetCurrentUser.Response"
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Common.Api.Results.ApiResult`1[[NextUni.Modules.Users.Application.Users.LoginUser.Login.TokenResponse, NextUni.Modules.Users.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "object",
+        "properties": {
+          "isSuccess": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/NextUni.Modules.Users.Application.Users.LoginUser.Login.TokenResponse"
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Common.Api.Results.ApiResult`1[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]": {
+        "type": "object",
+        "properties": {
+          "isSuccess": {
+            "type": "boolean"
+          },
+          "data": {
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Common.Domain.Page`1[[NextUni.Modules.Academic.Application.Majors.GetMajors.GetMajors.MajorResponse, NextUni.Modules.Academic.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NextUni.Modules.Academic.Application.Majors.GetMajors.GetMajors.MajorResponse"
+            },
+            "nullable": true
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "hasPreviousPage": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "hasNextPage": {
+            "type": "boolean",
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Common.Domain.Page`1[[NextUni.Modules.Academic.Application.SubjectGroups.GetSubjectGroups.GetSubjectGroups.Response, NextUni.Modules.Academic.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NextUni.Modules.Academic.Application.SubjectGroups.GetSubjectGroups.GetSubjectGroups.Response"
+            },
+            "nullable": true
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "hasPreviousPage": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "hasNextPage": {
+            "type": "boolean",
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Common.Domain.Page`1[[NextUni.Modules.Academic.Application.Subjects.GetSubjects.GetSubjects.ResponseItem, NextUni.Modules.Academic.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NextUni.Modules.Academic.Application.Subjects.GetSubjects.GetSubjects.ResponseItem"
+            },
+            "nullable": true
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "hasPreviousPage": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "hasNextPage": {
+            "type": "boolean",
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Common.Domain.Page`1[[NextUni.Modules.Academic.Application.Universities.GetUniversities.GetUniversity.ResponseItem, NextUni.Modules.Academic.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NextUni.Modules.Academic.Application.Universities.GetUniversities.GetUniversity.ResponseItem"
+            },
+            "nullable": true
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "hasPreviousPage": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "hasNextPage": {
+            "type": "boolean",
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Common.Domain.Page`1[[NextUni.Modules.Contents.Application.GetCounsellingArticlesByUniversity.GetCounsellingArticlesByUniversity.Response, NextUni.Modules.Contents.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NextUni.Modules.Contents.Application.GetCounsellingArticlesByUniversity.GetCounsellingArticlesByUniversity.Response"
+            },
+            "nullable": true
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "hasPreviousPage": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "hasNextPage": {
+            "type": "boolean",
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Common.Domain.Page`1[[NextUni.Modules.Contents.Application.GetMasterCounsellingArticles.GetMasterCounsellingArticles.Response, NextUni.Modules.Contents.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NextUni.Modules.Contents.Application.GetMasterCounsellingArticles.GetMasterCounsellingArticles.Response"
+            },
+            "nullable": true
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "hasPreviousPage": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "hasNextPage": {
+            "type": "boolean",
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Common.Domain.Page`1[[NextUni.Modules.Contents.Application.GetUniversityCounsellingArticles.GetUniversityCounsellingArticles.Response, NextUni.Modules.Contents.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NextUni.Modules.Contents.Application.GetUniversityCounsellingArticles.GetUniversityCounsellingArticles.Response"
+            },
+            "nullable": true
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "hasPreviousPage": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "hasNextPage": {
+            "type": "boolean",
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Common.Domain.Page`1[[NextUni.Modules.Events.Application.Events.GetEvents.GetEvents.Response, NextUni.Modules.Events.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NextUni.Modules.Events.Application.Events.GetEvents.GetEvents.Response"
+            },
+            "nullable": true
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "hasPreviousPage": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "hasNextPage": {
+            "type": "boolean",
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Common.Domain.Page`1[[NextUni.Modules.Events.Application.Events.GetEventsByUniversity.GetEventByUniversity.Response, NextUni.Modules.Events.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NextUni.Modules.Events.Application.Events.GetEventsByUniversity.GetEventByUniversity.Response"
+            },
+            "nullable": true
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "hasPreviousPage": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "hasNextPage": {
+            "type": "boolean",
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Modules.Academic.Api.Majors.CreateAdmissionScoreByYear.AdmissionScore": {
+        "type": "object",
+        "properties": {
+          "gpaScore": {
+            "type": "number",
+            "format": "float"
+          },
+          "examScore": {
+            "type": "number",
+            "format": "float"
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Modules.Academic.Api.Majors.CreateAdmissionScoreByYear.Request": {
+        "type": "object",
+        "properties": {
+          "year": {
+            "type": "string",
+            "format": "date"
+          },
+          "admissionScores": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/NextUni.Modules.Academic.Api.Majors.CreateAdmissionScoreByYear.AdmissionScore"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Modules.Academic.Api.Majors.CreateMajor.Request": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "universityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "content": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Modules.Academic.Api.Majors.UpdateMajor.Request": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "content": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Modules.Academic.Api.Majors.UpdateMajorSubjectGroupByYear.Request": {
+        "type": "object",
+        "properties": {
+          "groupIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Modules.Academic.Api.SubjectGroups.CreateSubjectGroup.Request": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "subjectIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Modules.Academic.Api.SubjectGroups.UpdateSubjectGroup.Request": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "subjectIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Modules.Academic.Api.Subjects.CreateSubject.Request": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Modules.Academic.Api.Subjects.UpdateSubject.Request": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Modules.Academic.Api.Universities.CreateUniversity.Request": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "region": {
+            "$ref": "#/components/schemas/NextUni.Modules.Academic.Domain.Universities.Region"
+          },
+          "universityType": {
+            "$ref": "#/components/schemas/NextUni.Modules.Academic.Domain.Universities.UniversityType"
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "websiteUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "facebookUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "content": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Modules.Academic.Api.Universities.UpdateUniversity.Request": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "region": {
+            "$ref": "#/components/schemas/NextUni.Modules.Academic.Domain.Universities.Region"
+          },
+          "universityType": {
+            "$ref": "#/components/schemas/NextUni.Modules.Academic.Domain.Universities.UniversityType"
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "websiteUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "facebookUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "content": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Modules.Academic.Application.Majors.GetMajors.GetMajors.MajorResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "content": {
+            "type": "string",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean"
+          },
+          "subjectGroupByYear": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/NextUni.Modules.Academic.Application.Majors.GetMajors.GetMajors.SubjectGroupResponse"
+              }
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Modules.Academic.Application.Majors.GetMajors.GetMajors.SubjectGroupResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Modules.Academic.Application.SubjectGroups.GetSubjectGroups.GetSubjectGroups.Response": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean"
+          },
+          "subjects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NextUni.Modules.Academic.Application.SubjectGroups.GetSubjectGroups.GetSubjectGroups.Subject"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Modules.Academic.Application.SubjectGroups.GetSubjectGroups.GetSubjectGroups.Subject": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Modules.Academic.Application.Subjects.GetSubjects.GetSubjects.ResponseItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Modules.Academic.Application.Universities.GetUniversities.GetUniversity.QueryFilter": {
+        "enum": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "NextUni.Modules.Academic.Application.Universities.GetUniversities.GetUniversity.ResponseItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "region": {
+            "$ref": "#/components/schemas/NextUni.Modules.Academic.Domain.Universities.Region"
+          },
+          "universityType": {
+            "$ref": "#/components/schemas/NextUni.Modules.Academic.Domain.Universities.UniversityType"
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "websiteUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "facebookUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "content": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Modules.Academic.Application.Universities.GetUniversityById.GetUniversityId.ResponseItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "region": {
+            "$ref": "#/components/schemas/NextUni.Modules.Academic.Domain.Universities.Region"
+          },
+          "universityType": {
+            "$ref": "#/components/schemas/NextUni.Modules.Academic.Domain.Universities.UniversityType"
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "websiteUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "facebookUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Modules.Academic.Domain.Universities.Region": {
+        "enum": [
+          0,
+          1,
+          2
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "NextUni.Modules.Academic.Domain.Universities.UniversityType": {
+        "enum": [
+          0,
+          1,
+          2
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "NextUni.Modules.Contents.Api.MasterCounsellingArticles.CreateMasterCounsellingArticle.Request": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "content": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Modules.Contents.Api.UniversityCounsellingArticles.CreateUniversityCounsellingArticle.Request": {
+        "type": "object",
+        "properties": {
+          "universityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "content": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Modules.Contents.Application.GetCounsellingArticlesByUniversity.GetCounsellingArticlesByUniversity.Response": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "content": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/NextUni.Modules.Contents.Domain.CounsellingArticles.CounsellingArticleStatus"
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Modules.Contents.Application.GetMasterCounsellingArticles.GetMasterCounsellingArticles.Response": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "content": {
+            "type": "string",
+            "nullable": true
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "$ref": "#/components/schemas/NextUni.Modules.Contents.Domain.CounsellingArticles.CounsellingArticleStatus"
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Modules.Contents.Application.GetUniversityCounsellingArticles.GetUniversityCounsellingArticles.Response": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "content": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/NextUni.Modules.Contents.Domain.CounsellingArticles.CounsellingArticleStatus"
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Modules.Contents.Domain.CounsellingArticles.CounsellingArticleStatus": {
+        "enum": [
+          0,
+          1,
+          2
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "NextUni.Modules.Events.Api.Events.CreateEvent.Request": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "isOnline": {
+            "type": "boolean"
+          },
+          "universityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "content": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Modules.Events.Application.Events.GetEventById.GetEventById.Response": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "isOnline": {
+            "type": "boolean"
+          },
+          "status": {
+            "$ref": "#/components/schemas/NextUni.Modules.Events.Domain.Events.EventStatus"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "content": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Modules.Events.Application.Events.GetEvents.GetEvents.Response": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "isOnline": {
+            "type": "boolean"
+          },
+          "status": {
+            "$ref": "#/components/schemas/NextUni.Modules.Events.Domain.Events.EventStatus"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "content": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Modules.Events.Application.Events.GetEventsByUniversity.GetEventByUniversity.Response": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "isOnline": {
+            "type": "boolean"
+          },
+          "status": {
+            "$ref": "#/components/schemas/NextUni.Modules.Events.Domain.Events.EventStatus"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "content": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Modules.Events.Domain.Events.EventStatus": {
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "NextUni.Modules.Users.Api.Staffs.CreateStaffAccount.Request": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "password": {
+            "type": "string",
+            "nullable": true
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "universityId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Modules.Users.Api.Users.Login.Request": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "password": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Modules.Users.Api.Users.RegisterUser.Request": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "password": {
+            "type": "string",
+            "nullable": true
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Modules.Users.Application.Staffs.GetStaffAccountByUniversity.GetStaffAccountByUniversity.Response": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "universityId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Modules.Users.Application.Users.GetCurrentUser.GetCurrentUser.Response": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "role": {
+            "type": "string",
+            "nullable": true
+          },
+          "universityId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextUni.Modules.Users.Application.Users.LoginUser.Login.TokenResponse": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "nullable": true
+          },
+          "refreshToken": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "http",
+        "description": "Enter your JWT token in this field",
+        "scheme": "Bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "security": [
+    {
+      "Bearer": [ ]
+    }
+  ]
+}

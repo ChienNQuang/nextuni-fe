@@ -7,13 +7,18 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AdminLayout } from "@/components/layouts/admin-layout";
-import { ApiService, UniversityRegion, UniversityType } from "@/lib/api";
-import { Plus, Search, Eye, Edit, Power } from "lucide-react";
+import { ApiService, UniversityRegion, UniversityType, University } from "@/lib/api";
+import { Plus, Search, Eye, Edit, Power, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+
+// For backward compatibility
+const CreateUniversityDialog = (props: Omit<UniversityDialogProps, 'university' | 'open' | 'onOpenChange'>) => (
+  <UniversityDialog {...props} />
+);
 
 export default function UniversitiesPage() {
   const [universities, setUniversities] = useState<any[]>([]);
@@ -22,6 +27,9 @@ export default function UniversitiesPage() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [editUniversity, setEditUniversity] = useState<Partial<University> | null>(null);
+  const [updatingStatus, setUpdatingStatus] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     fetchUniversities();
@@ -55,6 +63,19 @@ export default function UniversitiesPage() {
     );
   };
 
+  const getRegionName = (region: UniversityRegion): string => {
+    switch (region) {
+      case UniversityRegion.North:
+        return "North";
+      case UniversityRegion.Middle:
+        return "Central";
+      case UniversityRegion.South:
+        return "South";
+      default:
+        return "Unknown";
+    }
+  };
+
   const getTypeName = (type: number) => {
     switch (type) {
       case 0:
@@ -72,18 +93,66 @@ export default function UniversitiesPage() {
     university.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleEditClick = (university: Partial<University>) => {
+    setEditUniversity(university);
+    setOpenEditDialog(true);
+  };
+
+  const handleDialogOpenChange = (isOpen: boolean) => {
+    setOpenEditDialog(isOpen);
+    if (!isOpen) {
+      setEditUniversity(null);
+    }
+  };
+
+  const handleToggleStatus = async (university: any) => {
+    if (!university?.id) return;
+    
+    try {
+      setUpdatingStatus(prev => ({ ...prev, [university.id]: true }));
+      
+      const response = await ApiService.toggleUniversityStatus(university.id) as { isSuccess: boolean; data?: string };
+      
+      if (response.isSuccess) {
+        toast.success(`University ${university.isDeleted ? 'activated' : 'deactivated'} successfully`);
+        fetchUniversities(); // Refresh the list
+      } else {
+        throw new Error(response.data || 'Failed to update status');
+      }
+    } catch (error) {
+      console.error('Error toggling university status:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to update status');
+    } finally {
+      setUpdatingStatus(prev => ({ ...prev, [university.id]: false }));
+    }
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">Universities</h1>
-          <CreateUniversityDialog onSuccess={fetchUniversities}>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Add University
-            </Button>
-          </CreateUniversityDialog>
+          <div className="flex space-x-2">
+            <CreateUniversityDialog onSuccess={fetchUniversities}>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Add University
+              </Button>
+            </CreateUniversityDialog>
+            
+            {editUniversity && (
+              <UniversityDialog 
+                open={openEditDialog} 
+                onOpenChange={handleDialogOpenChange}
+                university={editUniversity}
+                onSuccess={() => {
+                  fetchUniversities();
+                  setEditUniversity(null);
+                }} 
+              />
+            )}
+          </div>
         </div>
 
         {/* Filters */}
@@ -148,7 +217,7 @@ export default function UniversitiesPage() {
                           </h3>
                           <div className="flex items-center space-x-4 mt-1">
                             <span className="text-sm text-gray-600">
-                              {university.region} •{" "}
+                              {getRegionName(university.region)} •{" "}
                               {getTypeName(university.universityType)}
                             </span>
                             {getStatusBadge(university.isDeleted)}
@@ -168,12 +237,25 @@ export default function UniversitiesPage() {
                           View Details
                         </Button>
                       </Link>
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleEditClick(university)}
+                      >
                         <Edit className="mr-2 h-4 w-4" />
                         Edit
                       </Button>
-                      <Button variant="outline" size="sm">
-                        <Power className="mr-2 h-4 w-4" />
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleToggleStatus(university)}
+                        disabled={updatingStatus[university.id]}
+                      >
+                        {updatingStatus[university.id] ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Power className="mr-2 h-4 w-4" />
+                        )}
                         {university.isDeleted ? "Activate" : "Deactivate"}
                       </Button>
                     </div>
@@ -228,33 +310,56 @@ interface UniversityFormData {
   email?: string;
   websiteUrl?: string;
   facebookUrl?: string;
-  title?: string;
-  content?: string;
+  [key: string]: any; // Allow string index signature for form handling
 }
 
-function CreateUniversityDialog({ children, onSuccess }: { children?: React.ReactNode, onSuccess?: () => void }) {
-  const [open, setOpen] = useState(false);
+interface UniversityDialogProps {
+  children?: React.ReactNode;
+  onSuccess?: () => void;
+  university?: any;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+const UniversityDialog = ({ 
+  children, 
+  onSuccess, 
+  university, 
+  open: externalOpen, 
+  onOpenChange: setExternalOpen 
+}: UniversityDialogProps) => {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isEdit = !!university;
+  const open = externalOpen !== undefined ? externalOpen : internalOpen;
+  const setOpen = setExternalOpen || setInternalOpen;
+
   const [isLoading, setIsLoading] = useState(false);
 
   const [formData, setFormData] = useState<UniversityFormData>({
-    name: "",
-    code: "",
-    region: UniversityRegion.North,
-    universityType: UniversityType.Public,
-    address: "",
-    email: "",
-    websiteUrl: "",
-    facebookUrl: "",
-    title: "",
-    content: "",
+    name: university?.name || "",
+    code: university?.code || "",
+    region: university?.region || UniversityRegion.North,
+    universityType: university?.universityType || UniversityType.Public,
+    address: university?.address || "",
+    email: university?.email || "",
+    websiteUrl: university?.websiteUrl || "",
+    facebookUrl: university?.facebookUrl || ""
   });
 
-  const handleChange = (field: string, value: string) => {
-    setFormData({ ...formData, [field]: value });
+  const handleChange = (field: keyof UniversityFormData, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
-  const handleSelectChange = (field: string, value: string) => {
-    setFormData({ ...formData, [field]: parseInt(value) });
+  const handleSelectChange = (field: keyof UniversityFormData, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: field === 'region' ? parseInt(value) as UniversityRegion : 
+               field === 'universityType' ? parseInt(value) as UniversityType :
+               value
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -262,29 +367,37 @@ function CreateUniversityDialog({ children, onSuccess }: { children?: React.Reac
     setIsLoading(true);
 
     try {
-      const response = await ApiService.createUniversity(formData);
-
-      if (!response.isSuccess) {
-        throw new Error("Failed to create university");
+      let response;
+      
+      if (isEdit) {
+        response = await ApiService.updateUniversity(university.id, formData);
+      } else {
+        response = await ApiService.createUniversity(formData);
       }
 
-      // Close dialog and reset form on success
+      if (!response.isSuccess) {
+        throw new Error(isEdit ? "Failed to update university" : "Failed to create university");
+      }
+
       setOpen(false);
-      setFormData({
-        name: "",
-        code: "",
-        region: UniversityRegion.North,
-        universityType: UniversityType.Public,
-        address: "",
-        websiteUrl: "",
-        facebookUrl: "",
-        title: "",
-        content: "",
-      });
+      
+      if (!isEdit) {
+        // Only reset form if not in edit mode
+        setFormData({
+          name: "",
+          code: "",
+          region: UniversityRegion.North,
+          universityType: UniversityType.Public,
+          address: "",
+          email: "",
+          websiteUrl: "",
+          facebookUrl: ""
+        });
+      }
 
       onSuccess && onSuccess();
     } catch (error) {
-      console.error("Error creating university:", error);
+      console.error(`Error ${isEdit ? 'updating' : 'creating'} university:`, error);
     } finally {
       setIsLoading(false);
     }
@@ -293,13 +406,15 @@ function CreateUniversityDialog({ children, onSuccess }: { children?: React.Reac
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        {children || <Button>Create University</Button>}
+        {children}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Create University</DialogTitle>
+          <DialogTitle>{isEdit ? 'Edit' : 'Create'} University</DialogTitle>
           <DialogDescription>
-            Fill in the details to create a new university.
+            {isEdit 
+              ? 'Update the university details below.'
+              : 'Fill in the details to create a new university.'}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -405,27 +520,6 @@ function CreateUniversityDialog({ children, onSuccess }: { children?: React.Reac
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="title">Title</Label>
-            <Input 
-              id="title" 
-              placeholder="Short title" 
-              value={formData.title}
-              onChange={(e) => handleChange("title", e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="content">Description</Label>
-            <Textarea 
-              id="content" 
-              placeholder="Detailed description about the university" 
-              className="min-h-[120px]" 
-              value={formData.content}
-              onChange={(e) => handleChange("content", e.target.value)}
-            />
-          </div>
-
           <DialogFooter>
             <Button 
               type="button" 
@@ -436,7 +530,9 @@ function CreateUniversityDialog({ children, onSuccess }: { children?: React.Reac
               Cancel
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Creating...' : 'Create University'}
+              {isLoading 
+                ? (isEdit ? 'Updating...' : 'Creating...') 
+                : (isEdit ? 'Update University' : 'Create University')}
             </Button>
           </DialogFooter>
         </form>

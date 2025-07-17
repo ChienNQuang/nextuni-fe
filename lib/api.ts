@@ -14,19 +14,21 @@ export interface University {
   id: string
   name: string
   region: UniversityRegion
-  type: UniversityType
-  status: number
-  title?: string
-  content?: string
+  universityType: UniversityType
+  isDeleted: boolean
+  code?: string
+  address?: string
+  email?: string
+  websiteUrl?: string
+  facebookUrl?: string
 }
 
 export interface Major {
   id: string
   name: string
+  code: string
   universityId: string
-  title?: string
-  content?: string
-  status: number
+  isDeleted: boolean
 }
 
 export interface Subject {
@@ -44,9 +46,8 @@ export interface SubjectGroup {
 export interface AdmissionScore {
   majorId: string
   majorName: string
-  year: number
-  minScore: number
-  maxScore: number
+  gpaScore: number
+  examScore: number
 }
 
 export interface CounsellingArticle {
@@ -71,6 +72,18 @@ export interface Event {
 export interface ApiResult<T> {
   isSuccess: boolean
   data: T
+}
+
+export interface PaginatedResult<T> {
+  isSuccess: boolean
+  data: {
+    items: T[]
+    pageNumber: number
+    totalPages: number
+    totalCount: number
+    hasPreviousPage: boolean
+    hasNextPage: boolean
+  }
 }
 
 export class ApiService {
@@ -104,7 +117,7 @@ export class ApiService {
     return this.request(`/universities?pageNumber=${pageNumber}&pageSize=${pageSize}&queryFilter=${queryFilter}`)
   }
 
-  static async getUniversityById(id: string) {
+  static async getUniversityById(id: string): Promise<ApiResult<University>> {
     return this.request(`/universities/${id}`)
   }
 
@@ -114,6 +127,38 @@ export class ApiService {
     )
   }
 
+  // Staff management
+  static async getStaffByUniversity(universityId: string) {
+    return this.request<{
+      id: string
+      email: string
+      firstName: string
+      lastName: string
+      phoneNumber: string
+      universityId: string
+    }>(`/universities/${universityId}/staff`)
+  }
+
+  static async createStaffAccount(data: {
+    email: string
+    password: string
+    firstName: string
+    lastName: string
+    phoneNumber: string
+    universityId: string
+  }) {
+    return this.request('/staffs/create-account', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  }
+
+  static async deleteStaffAccount(universityId: string) {
+    return this.request(`/universities/${universityId}/staff-account`, {
+      method: 'DELETE'
+    })
+  }
+
   static async createUniversity(data: Partial<University>) {
     return this.request("/universities", {
       method: "POST",
@@ -121,13 +166,60 @@ export class ApiService {
     })
   }
 
+  static async updateUniversity(id: string, data: Partial<University>) {
+    return this.request('/universities', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id,
+        ...data
+      }),
+    });
+  }
+
+  /**
+   * Toggle university active status
+   * @param id University ID
+   * @returns Promise with the API response
+   */
+  static async toggleUniversityStatus(id: string) {
+    return this.request(`/universities/status/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  }
+
   // Majors
-  static async getMajorsByUniversity(universityId: string, pageNumber = 1, pageSize = 10) {
-    return this.request(`/universities/${universityId}/majors?pageNumber=${pageNumber}&pageSize=${pageSize}`)
+  static async createMajor(data: {
+    code: string;
+    name: string;
+    universityId: string;
+    title?: string;
+    content?: string;
+  }): Promise<ApiResult<string>> {
+    return this.request('/majors', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  static async getMajorsByUniversity(universityId: string, pageNumber = 1, pageSize = 10): Promise<PaginatedResult<Major>> {
+    return this.request(`/admin/universities/${universityId}/majors?pageNumber=${pageNumber}&pageSize=${pageSize}`)
   }
 
   static async getAdmissionScores(universityId: string, year: string) {
     return this.request(`/universities/${universityId}/majors/admission-scores/${year}`)
+  }
+
+  static async updateAdmissionScores(year: string, scores: Array<{ majorId: string; gpaScore: number; examScore: number }>) {
+    return this.request(`/majors/admission-scores/${year}`, {
+      method: 'POST',
+      body: JSON.stringify({ admissionScores: scores })
+    })
   }
 
   // Events - Updated to use correct endpoints
@@ -204,7 +296,7 @@ export class ApiService {
   }
 
   // Admin endpoints
-  static async getAdminUniversities(pageNumber = 1, pageSize = 10, queryFilter = 0) {
+  static async getAdminUniversities(pageNumber = 1, pageSize = 10, queryFilter = 0): Promise<PaginatedResult<University>> {
     return this.request(`/admin/universities?pageNumber=${pageNumber}&pageSize=${pageSize}&queryFilter=${queryFilter}`)
   }
 
@@ -218,20 +310,42 @@ export class ApiService {
     )
   }
 
+  
   // Subjects
-  static async getSubjects(pageNumber = 1, pageSize = 10) {
+  static async getAdminSubjects(pageNumber = 1, pageSize = 10): Promise<PaginatedResult<Subject>> {
+    return this.request(`/admin/subjects?pageNumber=${pageNumber}&pageSize=${pageSize}`)
+  }
+
+  static async getSubjects(pageNumber = 1, pageSize = 10): Promise<PaginatedResult<Subject>> {
     return this.request(`/subjects?pageNumber=${pageNumber}&pageSize=${pageSize}`)
   }
 
   static async createSubject(data: { name: string }) {
-    return this.request("/subjects", {
-      method: "POST",
-      body: JSON.stringify(data),
+    return this.request('/subjects', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  }
+
+  static async updateSubject(id: string, data: { name: string }) {
+    return this.request(`/subjects/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    })
+  }
+
+  static async deleteSubject(id: string) {
+    return this.request(`/subjects/${id}`, {
+      method: 'DELETE'
     })
   }
 
   // Subject Groups
-  static async getSubjectGroups(pageNumber = 1, pageSize = 10) {
+  static async getAdminSubjectGroups(pageNumber = 1, pageSize = 10): Promise<PaginatedResult<SubjectGroup>> {
+    return this.request(`/admin/subject-groups?pageNumber=${pageNumber}&pageSize=${pageSize}`)
+  }
+
+  static async getSubjectGroups(pageNumber = 1, pageSize = 10): Promise<PaginatedResult<SubjectGroup>> {
     return this.request(`/subject-groups?pageNumber=${pageNumber}&pageSize=${pageSize}`)
   }
 
@@ -242,38 +356,77 @@ export class ApiService {
     })
   }
 
+  static async updateSubjectGroup(id: string, data: { code: string; subjectIds: string[] }) {
+    return this.request(`/subject-groups/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    })
+  }
+
+  static async deleteSubjectGroup(id: string) {
+    return this.request(`/subject-groups/${id}`, {
+      method: 'DELETE'
+    })
+  }
+
+  // University Introduction Blog
+  static async getUniversityIntroductionBlog(universityId: string) {
+    return this.request<{ isSuccess: boolean; data: { title: string; content: string } | null }>(
+      `/universities/${universityId}/introduction-blog`
+    )
+  }
+
+  static async createUniversityIntroductionBlog(data: { universityId: string; title: string; content: string }) {
+    return this.request<{ isSuccess: boolean; data: string }>(
+      '/universities/introduction-blog',
+      {
+        method: 'POST',
+        body: JSON.stringify(data)
+      }
+    )
+  }
+
+  // Major Introduction Blog
+  static async getMajorIntroductionBlog(majorId: string) {
+    return this.request<{ isSuccess: boolean; data: { title: string; content: string } | null }>(
+      `/majors/${majorId}/introduction-blog`
+    )
+  }
+
+  static async createMajorIntroductionBlog(data: { majorId: string; title: string; content: string }) {
+    return this.request<{ isSuccess: boolean; data: string }>(
+      '/majors/introduction-blog',
+      {
+        method: 'POST',
+        body: JSON.stringify(data)
+      }
+    )
+  }
+
   // Master Counselling Articles
-  static async getMasterCounsellingArticles(pageNumber = 1, pageSize = 10) {
+  static async getMasterCounsellingArticles(pageNumber = 1, pageSize = 10): Promise<PaginatedResult<CounsellingArticle>> {
     return this.request(`/master-counselling-articles?pageNumber=${pageNumber}&pageSize=${pageSize}`)
   }
 
   static async createMasterCounsellingArticle(data: { title: string; content: string }) {
     return this.request("/master-counselling-articles", {
-      method: "POST",
-      body: JSON.stringify(data),
+      method: 'POST',
+      body: JSON.stringify(data)
     })
   }
 
-  // Staff management
-  static async getStaffByUniversity(universityId: string) {
-    return this.request(`/universities/${universityId}/staff`)
-  }
-
-  static async createStaffAccount(data: any) {
-    return this.request("/staffs/create-account", {
-      method: "POST",
-      body: JSON.stringify(data),
-    })
-  }
-
-  static async deleteStaffAccount(universityId: string) {
-    return this.request(`/universities/${universityId}/staff-account`, {
-      method: "DELETE",
+  static async updateMasterCounsellingArticle(id: string, data: { title: string; content: string }) {
+    return this.request(`/master-counselling-articles/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
     })
   }
 
   // Chatbot
   static async chatbot(prompt: string) {
-    return this.request(`/chatbot?prompt=${encodeURIComponent(prompt)}`)
+    return this.request("/chatbot", {
+      method: "POST",
+      body: JSON.stringify({ prompt }),
+    })
   }
 }

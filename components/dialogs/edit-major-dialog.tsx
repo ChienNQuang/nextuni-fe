@@ -1,8 +1,6 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -17,19 +15,34 @@ import {
 import { ApiService } from "@/lib/api"
 import { toast } from "sonner"
 
-interface AddMajorDialogProps {
+interface EditMajorDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  universityId: string
+  major: {
+    id: string
+    name: string
+    code: string
+    title?: string
+    content?: string
+  }
   onSuccess: () => void
 }
 
-export function AddMajorDialog({ open, onOpenChange, universityId, onSuccess }: AddMajorDialogProps) {
+export function EditMajorDialog({ open, onOpenChange, major, onSuccess }: EditMajorDialogProps) {
   const [formData, setFormData] = useState({
     code: "",
     name: ""
   })
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (major) {
+      setFormData({
+        code: major.code || "",
+        name: major.name || ""
+      })
+    }
+  }, [major])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -41,38 +54,35 @@ export function AddMajorDialog({ open, onOpenChange, universityId, onSuccess }: 
 
     try {
       setLoading(true)
-      const result = await ApiService.createMajor({
-        code: formData.code,
-        name: formData.name,
-        universityId
+      await ApiService.request(`/majors/${major.id}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          code: formData.code,
+          name: formData.name
+        }),
       })
       
-      if (result.isSuccess) {
-        toast.success("Major created successfully")
-        setFormData({ code: "", name: "" })
-        onOpenChange(false)
-        onSuccess()
-      } else {
-        throw new Error("Failed to create major")
-      }
+      toast.success("Major updated successfully")
+      onOpenChange(false)
+      onSuccess()
     } catch (error) {
-      console.error("Failed to create major:", error)
-      toast.error("Failed to create major. Please try again.")
+      console.error("Failed to update major:", error)
+      toast.error("Failed to update major. Please try again.")
     } finally {
       setLoading(false)
     }
   }
 
   const handleChange = (field: string, value: string) => {
-    setFormData({ ...formData, [field]: value })
+    setFormData(prev => ({ ...prev, [field]: value }))
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Add New Major</DialogTitle>
-          <DialogDescription>Create a new major for this university.</DialogDescription>
+          <DialogTitle>Edit Major</DialogTitle>
+          <DialogDescription>Update major information</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
@@ -95,11 +105,16 @@ export function AddMajorDialog({ open, onOpenChange, universityId, onSuccess }: 
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={loading}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Creating..." : "Create Major"}
+              {loading ? "Saving..." : "Save Changes"}
             </Button>
           </DialogFooter>
         </form>

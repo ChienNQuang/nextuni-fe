@@ -3,32 +3,82 @@
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { AdminLayout } from "@/components/layouts/admin-layout"
-import { ApiService, type University, type Major, type AdmissionScore } from "@/lib/api"
+import { 
+  ApiService, 
+  type University, 
+  type Major, 
+  type AdmissionScore, 
+  UniversityRegion, 
+  UniversityType 
+} from "@/lib/api"
+import { IntroductionBlog } from "@/components/introduction-blog"
+import { UniversityIntroductionBlog } from "@/components/university/university-introduction-blog"
 import { Edit, Plus, Power, User, BookOpen, Trophy, Building2 } from "lucide-react"
 import { AddMajorDialog } from "@/components/dialogs/add-major-dialog"
+import { EditMajorDialog } from "@/components/dialogs/edit-major-dialog"
 import { AddStaffDialog } from "@/components/dialogs/add-staff-dialog"
+import { toast } from "sonner"
+import { UpdateScoreDialog } from "@/components/dialogs/update-score-dialog"
+
+type UniversityWithRegion = Omit<University, 'title' | 'description'> & {
+  region: UniversityRegion;
+  universityType: UniversityType;
+  introduction?: string;
+};
+
 
 export default function UniversityDetailPage() {
   const params = useParams()
   const universityId = params.id as string
 
-  const [university, setUniversity] = useState<University | null>(null)
+  const [university, setUniversity] = useState<UniversityWithRegion | null>(null)
   const [majors, setMajors] = useState<Major[]>([])
-  const [admissionScores, setAdmissionScores] = useState<AdmissionScore[]>([])
+  const [admissionScores, setAdmissionScores] = useState<AdmissionScore[]>([]);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString())
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [staffAccount, setStaffAccount] = useState<any>(null)
-
+  const [deletingStaffId, setDeletingStaffId] = useState<string | null>(null)
   const [isAddMajorDialogOpen, setIsAddMajorDialogOpen] = useState(false)
+  const [editingMajor, setEditingMajor] = useState<Major | null>(null)
+  const [updatingScore, setUpdatingScore] = useState<{
+    majorId: string
+    majorName: string
+    gpaScore?: number
+    examScore?: number
+  } | null>(null)
   const [isAddStaffDialogOpen, setIsAddStaffDialogOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState<string>('details')
+
+  // Initialize active tab from URL hash or default to 'details'
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const tabFromUrl = window.location.hash.replace('#', '')
+      if (tabFromUrl && ['details', 'majors', 'scores', 'staff'].includes(tabFromUrl)) {
+        setActiveTab(tabFromUrl)
+      }
+    }
+  }, [])
 
   useEffect(() => {
-    fetchUniversityData()
+    const fetchData = async () => {
+      try {
+        await Promise.all([
+          fetchUniversity(),
+          fetchMajors(),
+          fetchAdmissionScores(),
+          fetchStaffAccount()
+        ])
+      } catch (error) {
+        console.error('Failed to fetch data:', error)
+        toast.error('Failed to load data')
+      }
+    }
+    
+    fetchData()
   }, [universityId])
 
   useEffect(() => {
@@ -37,19 +87,91 @@ export default function UniversityDetailPage() {
     }
   }, [selectedYear])
 
-  const fetchUniversityData = async () => {
+  const fetchUniversity = async () => {
     try {
-      const [universityRes, majorsRes, staffRes] = await Promise.all([
-        ApiService.getUniversityById(universityId),
-        ApiService.getMajorsByUniversity(universityId, 1, 50),
-        ApiService.getStaffByUniversity(universityId).catch(() => ({ data: null })),
-      ])
-
-      setUniversity(universityRes.data)
-      setMajors(majorsRes.data?.items || [])
-      setStaffAccount(staffRes.data)
+      setLoading(true)
+      const response = await ApiService.getUniversityById(universityId)
+      if (response.isSuccess) {
+        setUniversity(response.data)
+      }
     } catch (error) {
-      console.error("Failed to fetch university data:", error)
+      console.error('Failed to fetch university:', error)
+      toast.error('Failed to load university data')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchMajorBlog = async (id: string) => {
+    try {
+      const response = await ApiService.getMajorIntroductionBlog(id) as unknown as {
+        isSuccess: boolean;
+        data: { title: string; content: string } | null;
+      };
+      
+      if (response.isSuccess && response.data) {
+        return { isSuccess: true, data: response.data };
+      }
+      return { isSuccess: true, data: { title: '', content: '' } };
+    } catch (error) {
+      console.error('Failed to fetch major blog:', error);
+      return { isSuccess: false, data: { title: '', content: '' } };
+    }
+  };
+
+  const handleSaveMajorBlog = async (data: { 
+    title: string; 
+    content: string; 
+    majorId?: string 
+  }): Promise<{ isSuccess: boolean }> => {
+    try {
+      if (!data.majorId) {
+        toast.error('Major ID is required to save introduction');
+        return { isSuccess: false };
+      }
+
+      const response = await ApiService.createMajorIntroductionBlog({
+        majorId: data.majorId,
+        title: data.title,
+        content: data.content
+      });
+      
+      if (response.isSuccess) {
+        toast.success('Major introduction saved successfully');
+        return { isSuccess: true };
+      } else {
+        throw new Error('Failed to save major introduction');
+      }
+    } catch (error) {
+      console.error('Failed to save major blog:', error);
+      toast.error('Failed to save major introduction');
+      return { isSuccess: false };
+    }
+  }
+
+  const fetchMajors = async () => {
+    try {
+      const result = await ApiService.getMajorsByUniversity(universityId)
+      setMajors(result.data.items)
+      return result
+    } catch (error) {
+      console.error("Failed to fetch majors:", error)
+      toast.error("Failed to load majors")
+      throw error
+    }
+  }
+  
+  const handleToggleMajorStatus = async (majorId: string, isDeleted: boolean) => {
+    try {
+      setLoading(true)
+      await ApiService.request<{ isSuccess: boolean }>(`/majors/status/${majorId}`, {
+        method: 'PUT'
+      })
+      await fetchMajors()
+      toast.success(`Major ${isDeleted ? 'deactivated' : 'activated'} successfully`)
+    } catch (error) {
+      console.error('Error toggling major status:', error)
+      toast.error(`Failed to ${isDeleted ? 'deactivate' : 'activate'} major`)
     } finally {
       setLoading(false)
     }
@@ -57,21 +179,48 @@ export default function UniversityDetailPage() {
 
   const fetchAdmissionScores = async () => {
     try {
-      const response = await ApiService.getAdmissionScores(universityId, selectedYear)
-      setAdmissionScores(response.data || [])
+      const response = await ApiService.getAdmissionScores(universityId, selectedYear);
+      if (response.isSuccess) {
+        // Ensure we're setting an array of AdmissionScore
+        const scores = Array.isArray(response.data) ? response.data : [];
+        setAdmissionScores(scores);
+      } else {
+        setAdmissionScores([]);
+      }
     } catch (error) {
-      console.error("Failed to fetch admission scores:", error)
+      console.error('Failed to fetch admission scores:', error);
+      setAdmissionScores([]);
+    }
+  };
+
+  const fetchStaffAccount = async () => {
+    try {
+      const response = await ApiService.getStaffByUniversity(universityId)
+      setStaffAccount(response.data || null)
+    } catch (error) {
+      console.error('Failed to fetch staff account:', error)
+      toast.error('Failed to load staff account')
     }
   }
 
-  const getStatusBadge = (status: number) => {
-    switch (status) {
-      case 1:
-        return <Badge variant="default">Active</Badge>
-      case 0:
-        return <Badge variant="secondary">Inactive</Badge>
+  const getStatusBadge = (isDeleted: boolean) => {
+    return isDeleted ? (
+      <Badge variant="secondary">Inactive</Badge>
+    ) : (
+      <Badge variant="default">Active</Badge>
+    )
+  }
+
+  const getRegionName = (region: number): string => {
+    switch (region) {
+      case UniversityRegion.North:
+        return "North"
+      case UniversityRegion.Middle:
+        return "Central"
+      case UniversityRegion.South:
+        return "South"
       default:
-        return <Badge variant="outline">Unknown</Badge>
+        return "Unknown"
     }
   }
 
@@ -85,6 +234,39 @@ export default function UniversityDetailPage() {
         return "International"
       default:
         return "Unknown"
+    }
+  }
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value)
+    if (typeof window !== 'undefined') {
+      const newUrl = new URL(window.location.href)
+      newUrl.hash = value
+      window.history.replaceState({}, '', newUrl.toString())
+    }
+  }
+
+  const handleDeleteStaff = async () => {
+    if (!confirm('Are you sure you want to remove the staff account for this university? This action cannot be undone.')) {
+      return
+    }
+
+    try {
+      setDeletingStaffId(universityId)
+      await ApiService.deleteStaffAccount(universityId)
+      toast.success('Staff account removed successfully')
+      setStaffAccount(null)
+    } catch (error: any) {
+      console.error('Failed to remove staff account:', error)
+      if (error.response?.data?.errors?.length > 0) {
+        error.response.data.errors.forEach((err: { description: string }) => {
+          toast.error(err.description)
+        })
+      } else {
+        toast.error(error.response?.data?.message || 'Failed to remove staff account')
+      }
+    } finally {
+      setDeletingStaffId(null)
     }
   }
 
@@ -117,19 +299,15 @@ export default function UniversityDetailPage() {
             <h1 className="text-3xl font-bold text-gray-900">{university.name}</h1>
             <div className="flex items-center space-x-4 mt-2">
               <span className="text-gray-600">
-                {university.region} • {getTypeName(university.type)}
+                {getRegionName(university.region)} • {getTypeName(university.universityType)}
               </span>
-              {getStatusBadge(university.status)}
+              {getStatusBadge(university.isDeleted)}
             </div>
           </div>
-          <Button variant="outline">
-            <Edit className="mr-2 h-4 w-4" />
-            Edit University
-          </Button>
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="details" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="details" className="flex items-center">
               <Building2 className="mr-2 h-4 w-4" />
@@ -143,9 +321,9 @@ export default function UniversityDetailPage() {
               <Trophy className="mr-2 h-4 w-4" />
               Admission Scores
             </TabsTrigger>
-            <TabsTrigger value="staff" className="flex items-center">
-              <User className="mr-2 h-4 w-4" />
-              Staff Account
+            <TabsTrigger value="staff" className="flex items-center gap-2">
+              <User className="h-4 w-4" />
+              <span>Staff ({staffAccount ? 1 : 0})</span>
             </TabsTrigger>
           </TabsList>
 
@@ -153,46 +331,27 @@ export default function UniversityDetailPage() {
             <Card>
               <CardHeader>
                 <CardTitle>University Information</CardTitle>
-                <CardDescription>Basic information and introduction article</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Name</label>
-                    <p className="mt-1 text-sm text-gray-900">{university.name}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Region</label>
-                    <p className="mt-1 text-sm text-gray-900">{university.region}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Type</label>
-                    <p className="mt-1 text-sm text-gray-900">{getTypeName(university.type)}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Status</label>
-                    <div className="mt-1">{getStatusBadge(university.status)}</div>
-                  </div>
+                <div className="space-y-6">
+                  <h2 className="text-xl font-semibold">University Introduction</h2>
+                  <UniversityIntroductionBlog 
+                    universityId={universityId}
+                    initialContent={university.introduction || ''}
+                    onSave={() => {
+                      // Refresh university data after saving
+                      fetchUniversity();
+                    }}
+                  />
                 </div>
-
-                {university.title && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Introduction Title</label>
-                    <p className="mt-1 text-sm text-gray-900">{university.title}</p>
-                  </div>
-                )}
-
-                {university.content && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Introduction Content</label>
-                    <div className="mt-1 text-sm text-gray-900 whitespace-pre-wrap">{university.content}</div>
-                  </div>
-                )}
-
-                <Button>
-                  <Edit className="mr-2 h-4 w-4" />
-                  Update Information
-                </Button>
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Type</label>
+                  <p className="mt-1 text-sm text-gray-900">{getTypeName(university.universityType)}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Status</label>
+                  <div className="mt-1">{getStatusBadge(university.isDeleted)}</div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -203,7 +362,7 @@ export default function UniversityDetailPage() {
                 <div className="flex justify-between items-center">
                   <div>
                     <CardTitle>Majors</CardTitle>
-                    <CardDescription>Manage university majors and their subject groups</CardDescription>
+                    <p className="text-sm text-gray-500">Manage university majors and their subject groups</p>
                   </div>
                   <Button onClick={() => setIsAddMajorDialogOpen(true)}>
                     <Plus className="mr-2 h-4 w-4" />
@@ -214,21 +373,40 @@ export default function UniversityDetailPage() {
               <CardContent>
                 <div className="space-y-4">
                   {majors.map((major) => (
-                    <div key={major.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <h4 className="font-medium">{major.name}</h4>
-                        {major.title && <p className="text-sm text-gray-600 mt-1">{major.title}</p>}
+                    <div key={major.id} className="border rounded-lg overflow-hidden">
+                      <div className="flex items-center justify-between p-4 bg-gray-50 border-b">
+                        <div>
+                          <h4 className="font-medium">{major.name}</h4>
+                          <p className="text-sm text-gray-600">Code: {major.code}</p>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          {getStatusBadge(major.isDeleted)}
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => setEditingMajor(major)}
+                          >
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleToggleMajorStatus(major.id, !major.isDeleted)}
+                            disabled={loading}
+                          >
+                            <Power className="mr-2 h-4 w-4" />
+                            {major.isDeleted ? "Activate" : "Deactivate"}
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        {getStatusBadge(major.status)}
-                        <Button variant="outline" size="sm">
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <Power className="mr-2 h-4 w-4" />
-                          {major.status === 1 ? "Deactivate" : "Activate"}
-                        </Button>
+                      <div className="p-4">
+                        <IntroductionBlog
+                          id={major.id}
+                          type="major"
+                          onSave={handleSaveMajorBlog}
+                          onFetch={fetchMajorBlog}
+                        />
                       </div>
                     </div>
                   ))}
@@ -243,46 +421,83 @@ export default function UniversityDetailPage() {
                 <div className="flex justify-between items-center">
                   <div>
                     <CardTitle>Admission Scores</CardTitle>
-                    <CardDescription>View and manage admission scores by academic year</CardDescription>
+                    <p className="text-sm text-gray-500">View and update admission scores by year</p>
                   </div>
-                  <Select value={selectedYear} onValueChange={setSelectedYear}>
-                    <SelectTrigger className="w-48">
-                      <SelectValue placeholder="Select year" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Array.from({ length: 5 }, (_, i) => {
-                        const year = new Date().getFullYear() - i
-                        return (
-                          <SelectItem key={year} value={year.toString()}>
-                            {year}
-                          </SelectItem>
-                        )
-                      })}
-                    </SelectContent>
-                  </Select>
+                  <div className="flex items-center space-x-2">
+                    <select
+                      value={selectedYear}
+                      onChange={(e) => setSelectedYear(e.target.value)}
+                      className="border rounded-md px-3 py-2 text-sm"
+                    >
+                      {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map((year) => (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {majors.map((major) => {
-                    const score = admissionScores.find((s) => s.majorId === major.id)
-                    return (
-                      <div key={major.id} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div>
-                          <h4 className="font-medium">{major.name}</h4>
-                        </div>
-                        <div className="flex items-center space-x-4">
-                          <span className="text-sm text-gray-600">
-                            Score: {score ? `${score.minScore} - ${score.maxScore}` : "0 - 0"}
-                          </span>
-                          <Button variant="outline" size="sm">
-                            <Edit className="mr-2 h-4 w-4" />
-                            Update Score
-                          </Button>
-                        </div>
-                      </div>
-                    )
-                  })}
+                  {admissionScores.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Major
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              GPA Score
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Exam Score
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Actions
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {admissionScores.map((score) => (
+                            <tr key={score.majorId}>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {score.majorName}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {score.gpaScore || 'N/A'}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {score.examScore || 'N/A'}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() =>
+                                    setUpdatingScore({
+                                      majorId: score.majorId,
+                                      majorName: score.majorName,
+                                      gpaScore: score.gpaScore,
+                                      examScore: score.examScore
+                                    })
+                                  }
+                                >
+                                  <Edit className="h-4 w-4 mr-2" />
+                                  Edit
+                                </Button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-gray-500">No admission scores found for the selected year.</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -291,56 +506,100 @@ export default function UniversityDetailPage() {
           <TabsContent value="staff">
             <Card>
               <CardHeader>
-                <CardTitle>Staff Account</CardTitle>
-                <CardDescription>Manage staff account for this university</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {staffAccount ? (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-sm font-medium text-gray-700">Name</label>
-                        <p className="mt-1 text-sm text-gray-900">
-                          {staffAccount.firstName} {staffAccount.lastName}
-                        </p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-gray-700">Email</label>
-                        <p className="mt-1 text-sm text-gray-900">{staffAccount.email}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-gray-700">Phone</label>
-                        <p className="mt-1 text-sm text-gray-900">{staffAccount.phoneNumber}</p>
-                      </div>
-                    </div>
-                    <Button variant="destructive">Remove Staff Account</Button>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle>Staff Account</CardTitle>
+                    <p className="text-sm text-gray-500">
+                      {staffAccount
+                        ? "Manage the staff account for this university"
+                        : "No staff account has been created for this university"}
+                    </p>
                   </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500 mb-4">No staff account exists for this university.</p>
+                  {!staffAccount && (
                     <Button onClick={() => setIsAddStaffDialogOpen(true)}>
                       <Plus className="mr-2 h-4 w-4" />
-                      Create Staff Account
+                      Add Staff Account
                     </Button>
+                  )}
+                </div>
+              </CardHeader>
+              {staffAccount && (
+                <CardContent>
+                  <div className="border rounded-lg p-4">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h4 className="font-medium">{staffAccount.email}</h4>
+                        <p className="text-sm text-gray-500">
+                          {staffAccount.isActive ? "Active" : "Inactive"} • {staffAccount.role}
+                        </p>
+                      </div>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={handleDeleteStaff}
+                        disabled={deletingStaffId === universityId}
+                      >
+                        {deletingStaffId === universityId ? "Removing..." : "Remove Access"}
+                      </Button>
+                    </div>
                   </div>
-                )}
-              </CardContent>
+                </CardContent>
+              )}
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Dialogs */}
         <AddMajorDialog
           open={isAddMajorDialogOpen}
           onOpenChange={setIsAddMajorDialogOpen}
           universityId={universityId}
-          onSuccess={fetchUniversityData}
+          onSuccess={() => {
+            fetchMajors()
+            setIsAddMajorDialogOpen(false)
+          }}
         />
+
+        {editingMajor && (
+          <EditMajorDialog
+            open={!!editingMajor}
+            onOpenChange={(open) => !open && setEditingMajor(null)}
+            major={editingMajor}
+            onSuccess={() => {
+              fetchMajors()
+              setEditingMajor(null)
+            }}
+          />
+        )}
 
         <AddStaffDialog
           open={isAddStaffDialogOpen}
           onOpenChange={setIsAddStaffDialogOpen}
           universityId={universityId}
-          onSuccess={fetchUniversityData}
+          onSuccess={() => {
+            fetchStaffAccount()
+            setIsAddStaffDialogOpen(false)
+          }}
         />
+
+        {updatingScore && (
+          <UpdateScoreDialog
+            open={!!updatingScore}
+            onOpenChange={(open) => !open && setUpdatingScore(null)}
+            universityId={universityId}
+            majorId={updatingScore.majorId}
+            majorName={updatingScore.majorName}
+            year={parseInt(selectedYear, 10)}
+            initialData={{
+              gpaScore: updatingScore.gpaScore,
+              examScore: updatingScore.examScore
+            }}
+            onSuccess={() => {
+              fetchAdmissionScores()
+              setUpdatingScore(null)
+            }}
+          />
+        )}
       </div>
     </AdminLayout>
   )

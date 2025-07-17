@@ -1,11 +1,12 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+'use client'
+
+import { useEffect, useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -14,11 +15,12 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { AdminLayout } from "@/components/layouts/admin-layout"
-import { ApiService } from "@/lib/api"
-import { Plus, Search, Edit, Eye, Power } from "lucide-react"
-import { toast } from "sonner"
+} from '@/components/ui/dialog'
+import { AdminLayout } from '@/components/layouts/admin-layout'
+import { ApiService } from '@/lib/api'
+import { Plus, Search, Edit, Eye, Power } from 'lucide-react'
+import { toast } from 'sonner'
+import { TipTapEditor } from '@/components/editor/tiptap-editor'
 
 export default function MasterArticlesPage() {
   const [articles, setArticles] = useState<any[]>([])
@@ -26,9 +28,22 @@ export default function MasterArticlesPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
-  const [selectedArticle, setSelectedArticle] = useState<any>(null)
-  const [newArticle, setNewArticle] = useState({ title: "", content: "" })
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [editingArticle, setEditingArticle] = useState<{
+    id: string
+    title: string
+    content: string
+  } | null>(null)
+  const [selectedArticle, setSelectedArticle] = useState<{
+    id: string
+    title: string
+    content: string
+    status: number
+    publishedAt: string
+  } | null>(null)
+  const [newArticle, setNewArticle] = useState({ title: '', content: '' })
   const [creating, setCreating] = useState(false)
+  const [editing, setEditing] = useState(false)
 
   useEffect(() => {
     fetchArticles()
@@ -49,20 +64,23 @@ export default function MasterArticlesPage() {
 
   const handleCreateArticle = async () => {
     if (!newArticle.title.trim() || !newArticle.content.trim()) {
-      toast.error("Please fill in all fields")
+      toast.error('Please fill in all fields')
       return
     }
 
     try {
       setCreating(true)
-      await ApiService.createMasterCounsellingArticle(newArticle)
-      toast.success("Article created successfully")
-      setNewArticle({ title: "", content: "" })
+      await ApiService.createMasterCounsellingArticle({
+        title: newArticle.title,
+        content: newArticle.content,
+      })
+      toast.success('Article created successfully')
+      setNewArticle({ title: '', content: '' })
       setIsCreateDialogOpen(false)
       fetchArticles()
     } catch (error) {
-      console.error("Failed to create article:", error)
-      toast.error("Failed to create article")
+      console.error('Failed to create article:', error)
+      toast.error('Failed to create article')
     } finally {
       setCreating(false)
     }
@@ -71,6 +89,39 @@ export default function MasterArticlesPage() {
   const handleViewArticle = (article: any) => {
     setSelectedArticle(article)
     setIsViewDialogOpen(true)
+  }
+
+  const handleEditArticle = (article: any) => {
+    setEditingArticle({
+      id: article.id,
+      title: article.title,
+      content: article.content,
+    })
+    setIsEditDialogOpen(true)
+  }
+
+  const handleUpdateArticle = async () => {
+    if (!editingArticle?.title.trim() || !editingArticle?.content.trim()) {
+      toast.error('Please fill in all fields')
+      return
+    }
+
+    try {
+      setEditing(true)
+      await ApiService.updateMasterCounsellingArticle(editingArticle.id, {
+        title: editingArticle.title,
+        content: editingArticle.content,
+      })
+      toast.success('Article updated successfully')
+      setIsEditDialogOpen(false)
+      setEditingArticle(null)
+      fetchArticles()
+    } catch (error) {
+      console.error('Failed to update article:', error)
+      toast.error('Failed to update article')
+    } finally {
+      setEditing(false)
+    }
   }
 
   const getStatusBadge = (status: number) => {
@@ -95,7 +146,7 @@ export default function MasterArticlesPage() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Master Counselling Articles</h1>
-            <p className="text-gray-600">Manage system-wide counselling articles</p>
+            <p className="text-gray-600">Create and manage rich text articles with advanced formatting</p>
           </div>
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
@@ -122,11 +173,10 @@ export default function MasterArticlesPage() {
                 </div>
                 <div>
                   <label className="text-sm font-medium">Content</label>
-                  <Textarea
-                    placeholder="Enter article content"
-                    value={newArticle.content}
-                    onChange={(e) => setNewArticle({ ...newArticle, content: e.target.value })}
-                    rows={10}
+                  <TipTapEditor
+                    content={newArticle.content}
+                    onChange={(content) => setNewArticle({ ...newArticle, content })}
+                    placeholder="Write your article content here..."
                   />
                 </div>
               </div>
@@ -182,7 +232,12 @@ export default function MasterArticlesPage() {
                       <div className="flex items-center space-x-4">
                         <div>
                           <h3 className="font-medium text-gray-900">{article.title}</h3>
-                          <p className="text-sm text-gray-600 mt-1 line-clamp-2">{article.content}</p>
+                          <div 
+                            className="text-sm text-gray-600 mt-1 line-clamp-2 prose prose-sm max-w-none" 
+                            dangerouslySetInnerHTML={{ 
+                              __html: article.content.replace(/<[^>]*>?/gm, '').substring(0, 200) + '...' 
+                            }} 
+                          />
                           <div className="flex items-center space-x-4 mt-2">
                             {getStatusBadge(article.status)}
                             <span className="text-xs text-gray-500">
@@ -194,17 +249,19 @@ export default function MasterArticlesPage() {
                     </div>
                     <div className="flex items-center space-x-2">
                       <Button variant="outline" size="sm" onClick={() => handleViewArticle(article)}>
-                        <Eye className="mr-2 h-4 w-4" />
-                        View
+                        <Eye className="h-4 w-4" />
                       </Button>
-                      <Button variant="outline" size="sm">
-                        <Edit className="mr-2 h-4 w-4" />
-                        Edit
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleEditArticle(article)}
+                      >
+                        <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="outline" size="sm">
+                      {/* <Button variant="outline" size="sm">
                         <Power className="mr-2 h-4 w-4" />
                         {article.status === 2 ? "Deactivate" : "Activate"}
-                      </Button>
+                      </Button> */}
                     </div>
                   </div>
                 ))}
@@ -229,12 +286,60 @@ export default function MasterArticlesPage() {
                 {selectedArticle?.publishedAt ? new Date(selectedArticle.publishedAt).toLocaleDateString() : "N/A"}
               </DialogDescription>
             </DialogHeader>
-            <div className="max-h-96 overflow-y-auto">
-              <div className="whitespace-pre-wrap text-sm">{selectedArticle?.content}</div>
+            <div className="border rounded-lg overflow-hidden">
+              <div 
+                className="prose dark:prose-invert max-w-none p-4" 
+                dangerouslySetInnerHTML={{ __html: selectedArticle?.content || '' }}
+              />
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>
                 Close
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Article Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="max-w-4xl">
+            <DialogHeader>
+              <DialogTitle>Edit Article</DialogTitle>
+              <DialogDescription>Update the article content below.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium">Title</label>
+                <Input
+                  placeholder="Enter article title"
+                  value={editingArticle?.title || ''}
+                  onChange={(e) => editingArticle && setEditingArticle({ ...editingArticle, title: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Content</label>
+                <TipTapEditor
+                  content={editingArticle?.content || ''}
+                  onChange={(content) => editingArticle && setEditingArticle({ ...editingArticle, content })}
+                  placeholder="Write your article content here..."
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setIsEditDialogOpen(false)
+                  setEditingArticle(null)
+                }}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleUpdateArticle} 
+                disabled={editing}
+              >
+                {editing ? 'Updating...' : 'Update Article'}
               </Button>
             </DialogFooter>
           </DialogContent>
