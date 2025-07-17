@@ -27,12 +27,9 @@ export function UniversityIntroductionBlog({
   const fetchBlog = useCallback(async () => {
     try {
       setIsLoading(true)
-      const response = await ApiService.getUniversityIntroductionBlog(universityId) as unknown as {
-        isSuccess: boolean;
-        data: { title: string; content: string } | null;
-      };
+      const response = await ApiService.getUniversityIntroductionBlog(universityId)
       
-      if (response.isSuccess && response.data) {
+      if (response?.isSuccess && response.data) {
         setContent(response.data.content || '')
       }
     } catch (error) {
@@ -56,7 +53,7 @@ export function UniversityIntroductionBlog({
         content
       })
       
-      if (response.isSuccess) {
+      if (response?.isSuccess) {
         toast.success('Introduction saved successfully')
         setIsEditing(false)
         onSave?.()

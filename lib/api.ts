@@ -112,9 +112,12 @@ export class ApiService {
     return result // Return the full result, components will access .data
   }
 
-  // Universities - Updated to handle queryFilter parameter
-  static async getUniversities(pageNumber = 1, pageSize = 10, queryFilter = 0) {
-    return this.request(`/universities?pageNumber=${pageNumber}&pageSize=${pageSize}&queryFilter=${queryFilter}`)
+  // Universities - Updated to handle both paginated and non-paginated requests
+  static async getUniversities(pageNumber = 1, pageSize = 10, queryFilter = 0): Promise<ApiResult<PaginatedResult<University>>> {
+    const url = pageNumber && pageSize 
+      ? `/universities?pageNumber=${pageNumber}&pageSize=${pageSize}&queryFilter=${queryFilter}`
+      : '/universities';
+    return this.request<PaginatedResult<University>>(url);
   }
 
   static async getUniversityById(id: string): Promise<ApiResult<University>> {
@@ -371,48 +374,50 @@ export class ApiService {
 
   // University Introduction Blog
   static async getUniversityIntroductionBlog(universityId: string) {
-    return this.request<{ isSuccess: boolean; data: { title: string; content: string } | null }>(
+    return this.request<{ title: string; content: string } | null>(
       `/universities/${universityId}/introduction-blog`
     )
   }
 
-  static async createUniversityIntroductionBlog(data: { universityId: string; title: string; content: string }) {
-    return this.request<{ isSuccess: boolean; data: string }>(
-      '/universities/introduction-blog',
+  static async createUniversityIntroductionBlog(data: {
+    universityId: string;
+    title: string;
+    content: string;
+  }) {
+    return this.request<{ id: string }>(
+      `/universities/${data.universityId}/introduction-blog`,
       {
         method: 'POST',
-        body: JSON.stringify(data)
+        body: JSON.stringify({
+          title: data.title,
+          content: data.content
+        })
       }
     )
   }
 
   // Major Introduction Blog
   static async getMajorIntroductionBlog(majorId: string) {
-    return this.request<{ isSuccess: boolean; data: { title: string; content: string } | null }>(
+    return this.request<{ title: string; content: string } | null>(
       `/majors/${majorId}/introduction-blog`
     )
   }
 
-  static async createMajorIntroductionBlog(data: { majorId: string; title: string; content: string }) {
-    return this.request<{ isSuccess: boolean; data: string }>(
-      '/majors/introduction-blog',
+  static async createMajorIntroductionBlog(data: {
+    majorId: string;
+    title: string;
+    content: string;
+  }) {
+    return this.request<{ id: string }>(
+      `/majors/${data.majorId}/introduction-blog`,
       {
         method: 'POST',
-        body: JSON.stringify(data)
+        body: JSON.stringify({
+          title: data.title,
+          content: data.content
+        })
       }
     )
-  }
-
-  // Master Counselling Articles
-  static async getMasterCounsellingArticles(pageNumber = 1, pageSize = 10): Promise<PaginatedResult<CounsellingArticle>> {
-    return this.request(`/master-counselling-articles?pageNumber=${pageNumber}&pageSize=${pageSize}`)
-  }
-
-  static async createMasterCounsellingArticle(data: { title: string; content: string }) {
-    return this.request("/master-counselling-articles", {
-      method: 'POST',
-      body: JSON.stringify(data)
-    })
   }
 
   static async updateMasterCounsellingArticle(id: string, data: { title: string; content: string }) {
@@ -420,6 +425,18 @@ export class ApiService {
       method: 'PUT',
       body: JSON.stringify(data)
     })
+  }
+
+  // Master Counselling Articles
+  static async getMasterCounsellingArticles(pageNumber = 1, pageSize = 10): Promise<ApiResult<PaginatedResult<CounsellingArticle>>> {
+    return this.request(`/master-counselling-articles?pageNumber=${pageNumber}&pageSize=${pageSize}`);
+  }
+
+  static async createMasterCounsellingArticle(data: { title: string; content: string }) {
+    return this.request<{ id: string }>("/master-counselling-articles", {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
   }
 
   // Chatbot
