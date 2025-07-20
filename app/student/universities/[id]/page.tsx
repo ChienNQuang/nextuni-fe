@@ -6,22 +6,24 @@ import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
-import { StudentLayout } from "@/components/layouts/student-layout"
 import { AdmissionScore, ApiService, CounsellingArticle, Major, SubjectGroup, University, UniversityRegion, UniversityType } from "@/lib/api"
+import { StudentLayout } from "@/components/layouts/student-layout"
 import { 
   Building2, 
-  MapPin, 
   BookOpen, 
+  FileText, 
+  MapPin, 
+  Calendar, 
+  Users, 
   GraduationCap, 
-  TrendingUp, 
-  FileText,
-  Calendar,
-  Users,
-  Award
+  Award,
+  TrendingUp
 } from "lucide-react"
+import { formatDate } from "date-fns"
 
 export default function UniversityDetailPage() {
   const params = useParams()
@@ -41,6 +43,7 @@ export default function UniversityDetailPage() {
   const [advisoryArticles, setAdvisoryArticles] = useState<CounsellingArticle[]>([])
   const [title, setTitle] = useState<string>("")
   const [content, setContent] = useState<string>("")
+  const [selectedArticle, setSelectedArticle] = useState<CounsellingArticle | null>(null)
   
   // UI states
   const [loading, setLoading] = useState(true)
@@ -51,7 +54,6 @@ export default function UniversityDetailPage() {
   // Available years for dropdowns, 5 years latest
   const availableYears = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i)
 
-  console.log("University ID:", universityId)
 
   useEffect(() => {
     if (universityId) {
@@ -73,12 +75,11 @@ export default function UniversityDetailPage() {
       
       // Fetch majors
       const majorsResponse = await ApiService.getStudentMajorsByUniversity(String(universityId))
-      console.log("Majors:", majorsResponse)
       setMajors(majorsResponse.data?.items || [])
       
       // Fetch admission scores
       const scoresResponse = await ApiService.getAdmissionScores(String(universityId), selectedScoreYear.toString())
-      setAdmissionScores(scoresResponse.data?.items || [])
+      setAdmissionScores(scoresResponse.data || [])
       
       // Fetch advisory articles
       const articlesResponse = await ApiService.getUniversityConsellingArticles(String(universityId), "Published", 1, 100)
@@ -136,7 +137,9 @@ export default function UniversityDetailPage() {
   }
 
   const getScoresForYear = (year: number) => {
-    return admissionScores.filter(score => score.year === year)
+    // Since AdmissionScore doesn't have an admissionYear property,
+    // we'll filter based on the selectedScoreYear state instead
+    return admissionScores
   }
 
   const formatScore = (min: number, max: number) => {
@@ -340,14 +343,17 @@ export default function UniversityDetailPage() {
                           <h4 className="font-semibold text-lg">{selectedMajor.name}</h4>
                           <p className="text-sm text-gray-500 mb-3">{selectedMajor.code}</p>
                           
-                          {getMajorIntroductionBlog(selectedMajor.id) && (
-                            <div>
-                              <h5 className="font-medium mb-2">{getMajorIntroductionBlog(selectedMajor.id)?.title}</h5>
-                              <div className="prose max-w-none text-sm text-gray-700">
-                                <div dangerouslySetInnerHTML={{ __html: getMajorIntroductionBlog(selectedMajor.id)?.content || "" }} />
+                          {majors && (() => {
+                            const majorIntroductionBlog = getMajorIntroductionBlog(selectedMajor.id)
+                            return majorIntroductionBlog && (
+                              <div>
+                                <h5 className="font-medium mb-2">{majorIntroductionBlog.title}</h5>
+                                <div className="prose max-w-none text-sm text-gray-700">
+                                  <div dangerouslySetInnerHTML={{ __html: majorIntroductionBlog.content || "" }} />
+                                </div>
                               </div>
-                            </div>
-                          )}
+                            )
+                          })()}
                         </div>
 
                         <Separator />
@@ -409,7 +415,7 @@ export default function UniversityDetailPage() {
                           <div key={score.majorId} className="flex items-center justify-between p-4 border rounded-lg">
                             <div>
                               <h4 className="font-medium">{score.majorName}</h4>
-                              <p className="text-sm text-gray-500">Academic Year {score.year}</p>
+                              {/* <p className="text-sm text-gray-500">Academic Year {score.year}</p> */}
                             </div>
                             <div className="text-right">
                               <p className="text-lg font-semibold text-primary">
@@ -462,20 +468,16 @@ export default function UniversityDetailPage() {
                                 <div className="flex items-center space-x-4 text-sm text-gray-500">
                                   <div className="flex items-center space-x-1">
                                     <Calendar className="h-3 w-3" />
-                                    <span>{new Date(article.createdAt).toLocaleDateString()}</span>
+                                    <span>{new Date(article.publishedAt).toLocaleDateString()}</span>
                                   </div>
-                                  {article.author && (
-                                    <div className="flex items-center space-x-1">
-                                      <Users className="h-3 w-3" />
-                                      <span>{article.author}</span>
-                                    </div>
-                                  )}
                                 </div>
                               </div>
-                              <Button variant="ghost" size="sm" asChild>
-                                <Link href={`/student/articles/${article.id}`}>
-                                  Read More
-                                </Link>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => setSelectedArticle(article)}
+                              >
+                                Read More
                               </Button>
                             </div>
                           </CardContent>
@@ -494,6 +496,29 @@ export default function UniversityDetailPage() {
           </Tabs>
         </div>
       </div>
+
+      {/* Article Preview Dialog */}
+      <Dialog open={!!selectedArticle} onOpenChange={(open) => !open && setSelectedArticle(null)}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">{selectedArticle?.title}</DialogTitle>
+            <div className="flex items-center text-sm text-gray-500 space-x-4 mt-2">
+              <div className="flex items-center">
+                <Calendar className="h-4 w-4 mr-1" />
+                {selectedArticle?.publishedAt && formatDate(new Date(selectedArticle.publishedAt), 'MMMM d, yyyy')}
+              </div>
+              <div className="flex items-center">
+                <Building2 className="h-4 w-4 mr-1" />
+                {university?.name}
+              </div>
+            </div>
+          </DialogHeader>
+          <div 
+            className="prose dark:prose-invert max-w-none"
+            dangerouslySetInnerHTML={{ __html: selectedArticle?.content || '' }}
+          />
+        </DialogContent>
+      </Dialog>
     </StudentLayout>
   )
 }

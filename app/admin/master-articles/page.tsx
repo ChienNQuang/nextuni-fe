@@ -17,7 +17,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { AdminLayout } from '@/components/layouts/admin-layout'
-import { ApiService } from '@/lib/api'
+import { ApiService, CounsellingArticleStatus } from '@/lib/api'
 import { Plus, Search, Edit, Eye, Power } from 'lucide-react'
 import { toast } from 'sonner'
 import { TipTapEditor } from '@/components/editor/tiptap-editor'
@@ -108,7 +108,7 @@ export default function MasterArticlesPage() {
 
     try {
       setEditing(true)
-      await ApiService.updateMasterCounsellingArticle(editingArticle.id, {
+      await ApiService.updateCounsellingArticle(editingArticle.id, {
         title: editingArticle.title,
         content: editingArticle.content,
       })

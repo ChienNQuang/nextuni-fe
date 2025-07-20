@@ -65,7 +65,7 @@ export interface CounsellingArticleCreateRequest {
 }
 
 export interface CounsellingArticle {
-  publishedAt: string | number | Date
+  publishedAt: string
   id: string
   title: string
   content: string
@@ -276,7 +276,7 @@ export class ApiService {
     return this.request(`/admin/universities/${universityId}/majors?pageNumber=${pageNumber}&pageSize=${pageSize}`)
   }
 
-  static async getAdmissionScores(universityId: string, year: string): Promise<PaginatedResult<AdmissionScore>> {
+  static async getAdmissionScores(universityId: string, year: string): Promise<ApiResult<AdmissionScore[]>> {
     return this.request(`/universities/${universityId}/majors/admission-scores/${year}`)
   }
 
@@ -313,7 +313,7 @@ export class ApiService {
   // Cancel event method is defined below with proper return type
 
   // Counselling Articles
-  static async getCounsellingArticles(status?: string, pageNumber = 1, pageSize = 10) {
+  static async getCounsellingArticles(status?: string, pageNumber = 1, pageSize = 10): Promise<PaginatedResult<CounsellingArticle>> {
     const endpoint = status ? `/university-counselling-articles/${status}` : "/university-counselling-articles"
     return this.request(`${endpoint}?pageNumber=${pageNumber}&pageSize=${pageSize}`)
   }
@@ -489,10 +489,20 @@ export class ApiService {
     )
   }
 
-  static async updateMasterCounsellingArticle(id: string, data: { title: string; content: string }) {
-    return this.request(`/master-counselling-articles/${id}`, {
+  static async updateCounsellingArticle(id: string, data: { title: string; content: string }) {
+    return this.request(`/counselling-articles`, {
       method: 'PUT',
-      body: JSON.stringify(data)
+      body: JSON.stringify({
+        articleId: id,
+        title: data.title,
+        content: data.content
+      })
+    })
+  }
+
+  static async hideUnhideCounsellingArticle(id: string) {
+    return this.request(`/university-counselling-articles/hide-unhide/${id}`, {
+      method: 'PUT',
     })
   }
 

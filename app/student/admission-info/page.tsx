@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { StudentLayout } from "@/components/layouts/student-layout"
-import { ApiService } from "@/lib/api"
+import { ApiService, CounsellingArticle, CounsellingArticleStatus } from "@/lib/api"
 import { 
   BookOpen,
   FileText,
@@ -19,30 +19,10 @@ import {
   Newspaper
 } from "lucide-react"
 
-// Type definitions based on your interfaces
-interface MasterCounsellingArticle {
-  id: string
-  title: string
-  content: string
-  createdAt?: string
-  updatedAt?: string
-}
-
-interface CounsellingArticle {
-  id: string
-  title: string
-  content: string
-  status: "Draft" | "Pending" | "Published"
-  universityId?: string
-  universityName?: string
-  createdAt?: string
-  updatedAt?: string
-}
-
 export default function AdmissionInformationPage() {
   // General Information tab state
-  const [generalArticles, setGeneralArticles] = useState<MasterCounsellingArticle[]>([])
-  const [selectedGeneralArticle, setSelectedGeneralArticle] = useState<MasterCounsellingArticle | null>(null)
+  const [generalArticles, setGeneralArticles] = useState<CounsellingArticle[]>([])
+  const [selectedGeneralArticle, setSelectedGeneralArticle] = useState<CounsellingArticle | null>(null)
   const [generalLoading, setGeneralLoading] = useState(true)
   const [generalCurrentPage, setGeneralCurrentPage] = useState(1)
   const [generalTotalPages, setGeneralTotalPages] = useState(1)
@@ -107,13 +87,13 @@ export default function AdmissionInformationPage() {
     })
   }
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: CounsellingArticleStatus) => {
     switch (status) {
-      case "Published":
+      case CounsellingArticleStatus.Published:
         return <Badge variant="default">Published</Badge>
-      case "Pending":
+      case CounsellingArticleStatus.Pending:
         return <Badge variant="outline" className="border-yellow-500 text-yellow-700">Pending</Badge>
-      case "Draft":
+      case CounsellingArticleStatus.Draft:
         return <Badge variant="secondary">Draft</Badge>
       default:
         return <Badge variant="outline">Unknown</Badge>
@@ -148,7 +128,7 @@ export default function AdmissionInformationPage() {
     }
 
     return (
-      <div className="space-y-3 max-h-96 overflow-y-auto">
+      <div className="space-y-3 max-h-[70vh] overflow-y-auto">
         {articles.map((article) => (
           <Card
             key={article.id}
@@ -192,7 +172,7 @@ export default function AdmissionInformationPage() {
     )
   }
 
-  const renderSelectedArticle = (article: any, isUniversity = false) => {
+  const renderSelectedArticle = (article: CounsellingArticle, isUniversity = false) => {
     if (!article) {
       return (
         <div className="flex items-center justify-center h-64 text-gray-500">
@@ -211,12 +191,12 @@ export default function AdmissionInformationPage() {
           <div className="flex items-center space-x-4 text-sm text-gray-500 mb-6">
             <div className="flex items-center space-x-1">
               <Calendar className="h-4 w-4" />
-              <span>{formatDate(article.createdAt || article.updatedAt)}</span>
+              <span>{formatDate(article.publishedAt)}</span>
             </div>
-            {isUniversity && article.universityName && (
+            {isUniversity && article.universityId && (
               <div className="flex items-center space-x-1">
                 <University className="h-4 w-4" />
-                <span>{article.universityName}</span>
+                <span>{article.universityId}</span>
               </div>
             )}
             {isUniversity && article.status && getStatusBadge(article.status)}
@@ -281,11 +261,11 @@ export default function AdmissionInformationPage() {
                 <TabsList className="grid w-full max-w-md grid-cols-2 bg-white/80 backdrop-blur-sm">
                   <TabsTrigger value="general" className="flex items-center space-x-2">
                     <BookOpen className="h-4 w-4" />
-                    <span>General Information</span>
+                    <span>Master Counselling Articles</span>
                   </TabsTrigger>
                   <TabsTrigger value="university" className="flex items-center space-x-2">
                     <University className="h-4 w-4" />
-                    <span>University Articles</span>
+                    <span>University Counselling Articles</span>
                   </TabsTrigger>
                 </TabsList>
               </div>
@@ -300,7 +280,7 @@ export default function AdmissionInformationPage() {
                         <div className="p-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg">
                           <Newspaper className="h-5 w-5 text-white" />
                         </div>
-                        <span>General Admission Articles</span>
+                        <span>Master Counselling Articles</span>
                       </CardTitle>
                       <CardDescription>
                         System-wide guides and information about university admissions
@@ -331,9 +311,11 @@ export default function AdmissionInformationPage() {
                         <span>Article Content</span>
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="p-6 max-h-96 overflow-y-auto">
-                      {renderSelectedArticle(selectedGeneralArticle)}
-                    </CardContent>
+                    {selectedGeneralArticle && (
+                      <CardContent className="p-6 max-h-96 overflow-y-auto">
+                        {renderSelectedArticle(selectedGeneralArticle)}
+                      </CardContent>
+                    )}
                   </Card>
                 </div>
               </TabsContent>
@@ -348,13 +330,13 @@ export default function AdmissionInformationPage() {
                         <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg">
                           <University className="h-5 w-5 text-white" />
                         </div>
-                        <span>University Published Articles</span>
+                        <span>University Counselling Articles</span>
                       </CardTitle>
                       <CardDescription>
                         Articles and guides published by individual universities
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="p-6">
+                    <CardContent className="p-6 max-h-[70vh]">
                       {renderArticlesList(
                         universityArticles,
                         selectedUniversityArticle,
@@ -380,9 +362,11 @@ export default function AdmissionInformationPage() {
                         <span>Article Content</span>
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="p-6 max-h-96 overflow-y-auto">
-                      {renderSelectedArticle(selectedUniversityArticle, true)}
-                    </CardContent>
+                    {selectedUniversityArticle && (
+                      <CardContent className="p-6 max-h-[70vh] overflow-y-auto">
+                        {renderSelectedArticle(selectedUniversityArticle, true)}
+                      </CardContent>
+                    )}
                   </Card>
                 </div>
               </TabsContent>

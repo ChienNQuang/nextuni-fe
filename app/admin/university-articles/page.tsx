@@ -118,13 +118,13 @@ export default function UniversityArticlesPage() {
                   />
                 </div>
               </div>
-              <Select value={CounsellingArticleStatus[statusFilter]} onValueChange={(value) => setStatusFilter(Number(value))}>
+              <Select value={statusFilter.toString()} onValueChange={(value) => setStatusFilter(Number(value))}>
                 <SelectTrigger className="w-48">
                   <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Pending">Pending</SelectItem>
-                  <SelectItem value="Published">Published</SelectItem>
+                  <SelectItem value={CounsellingArticleStatus.Pending.toString()}>Pending</SelectItem>
+                  <SelectItem value={CounsellingArticleStatus.Published.toString()}>Published</SelectItem>
                 </SelectContent>
               </Select>
             </div>
