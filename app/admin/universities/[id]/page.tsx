@@ -529,9 +529,6 @@ export default function UniversityDetailPage() {
                     <div className="flex justify-between items-center">
                       <div>
                         <h4 className="font-medium">{staffAccount.email}</h4>
-                        <p className="text-sm text-gray-500">
-                          {staffAccount.isActive ? "Active" : "Inactive"} • {staffAccount.role}
-                        </p>
                       </div>
                       <Button
                         variant="destructive"
