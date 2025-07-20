@@ -583,14 +583,11 @@ export default function UniversityDetailPage() {
           <UpdateScoreDialog
             open={!!updatingScore}
             onOpenChange={(open) => !open && setUpdatingScore(null)}
-            universityId={universityId}
             majorId={updatingScore.majorId}
             majorName={updatingScore.majorName}
-            year={parseInt(selectedYear, 10)}
-            initialData={{
-              gpaScore: updatingScore.gpaScore,
-              examScore: updatingScore.examScore
-            }}
+            year={selectedYear}
+            initialGpaScore={updatingScore.gpaScore}
+            initialExamScore={updatingScore.examScore}
             onSuccess={() => {
               fetchAdmissionScores()
               setUpdatingScore(null)

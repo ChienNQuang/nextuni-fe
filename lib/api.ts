@@ -365,7 +365,7 @@ export class ApiService {
     return this.request(`/admin/events/${status}?pageNumber=${pageNumber}&pageSize=${pageSize}`)
   }
 
-  static async getAdminCounsellingArticles(status: string, pageNumber = 1, pageSize = 10) {
+  static async getAdminCounsellingArticles(status: string, pageNumber = 1, pageSize = 10): Promise<PaginatedResult<CounsellingArticle>> {
     return this.request(
       `/admin/university-counselling-articles/${status}?pageNumber=${pageNumber}&pageSize=${pageSize}`,
     )

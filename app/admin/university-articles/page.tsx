@@ -15,7 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { AdminLayout } from "@/components/layouts/admin-layout"
-import { ApiService } from "@/lib/api"
+import { ApiService, CounsellingArticleStatus } from "@/lib/api"
 import { Search, Eye, Check, X } from "lucide-react"
 import { toast } from "sonner"
 
@@ -23,7 +23,7 @@ export default function UniversityArticlesPage() {
   const [articles, setArticles] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("Pending")
+  const [statusFilter, setStatusFilter] = useState(CounsellingArticleStatus.Pending)
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
   const [selectedArticle, setSelectedArticle] = useState<any>(null)
   const [currentPage, setCurrentPage] = useState(1)
@@ -36,7 +36,7 @@ export default function UniversityArticlesPage() {
   const fetchArticles = async () => {
     try {
       setLoading(true)
-      const response = await ApiService.getAdminCounsellingArticles(statusFilter, currentPage, 10)
+      const response = await ApiService.getAdminCounsellingArticles(CounsellingArticleStatus[statusFilter], currentPage, 10)
       setArticles(response.data?.items || [])
       setTotalPages(response.data?.totalPages || 1)
     } catch (error) {
@@ -118,14 +118,13 @@ export default function UniversityArticlesPage() {
                   />
                 </div>
               </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <Select value={statusFilter.toString()} onValueChange={(value) => setStatusFilter(Number(value))}>
                 <SelectTrigger className="w-48">
                   <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Pending">Pending</SelectItem>
                   <SelectItem value="Published">Published</SelectItem>
-                  <SelectItem value="Draft">Draft</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -164,7 +163,7 @@ export default function UniversityArticlesPage() {
                         <Eye className="mr-2 h-4 w-4" />
                         View
                       </Button>
-                      {statusFilter === "Pending" && (
+                      {statusFilter === CounsellingArticleStatus.Pending && (
                         <>
                           <Button
                             variant="outline"
