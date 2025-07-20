@@ -91,7 +91,7 @@ export function UpdateScoreDialog({
                 type="number"
                 step="0.1"
                 min="0"
-                max="10"
+                max="30"
                 className="col-span-3"
                 value={examScore}
                 onChange={(e) => setExamScore(e.target.value)}
