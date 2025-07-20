@@ -38,6 +38,7 @@ export interface Subject {
 }
 
 export interface SubjectGroup {
+  code: string
   id: string
   name: string
   subjects: Subject[]
@@ -50,12 +51,42 @@ export interface AdmissionScore {
   examScore: number
 }
 
+export enum CounsellingArticleStatus {
+  Draft = 0,
+  Pending = 1,
+  Published = 2,
+}
+
+export interface CounsellingArticleCreateRequest {
+  title: string
+  content: string
+  status: CounsellingArticleStatus 
+  universityId: string
+}
+
 export interface CounsellingArticle {
+  publishedAt: string | number | Date
   id: string
   title: string
   content: string
-  status: "Draft" | "Pending" | "Published"
+  status: CounsellingArticleStatus
   universityId?: string
+}
+
+export enum EventStatus {
+  Pending,
+  Published,
+  Rejected,
+  Ongoing,
+  Completed,
+  Cancelled
+}
+
+export interface EventRegistration {
+  email: string
+  firstName: string
+  lastName: string
+  phoneNumber: string
 }
 
 export interface Event {
@@ -63,10 +94,13 @@ export interface Event {
   id: string
   title: string
   content: string
-  status: number
+  status: EventStatus
   universityId: string
   startDate: string
   endDate: string
+  isOnline: boolean
+  address: string
+  description: string
 }
 
 export interface ApiResult<T> {
@@ -113,7 +147,7 @@ export class ApiService {
   }
 
   // Universities - Updated to handle both paginated and non-paginated requests
-  static async getUniversities(pageNumber = 1, pageSize = 10, queryFilter = 0): Promise<ApiResult<PaginatedResult<University>>> {
+  static async getUniversities(pageNumber = 1, pageSize = 10, queryFilter = 0): Promise<PaginatedResult<University>> {
     const url = pageNumber && pageSize 
       ? `/universities?pageNumber=${pageNumber}&pageSize=${pageSize}&queryFilter=${queryFilter}`
       : '/universities';
@@ -124,7 +158,7 @@ export class ApiService {
     return this.request(`/universities/${id}`)
   }
 
-  static async getUniversityConsellingArticles(universityId: string, status: string, pageNumber = 1, pageSize = 10) {
+  static async getUniversityConsellingArticles(universityId: string, status: string, pageNumber = 1, pageSize = 10): Promise<PaginatedResult<CounsellingArticle>> {
     return this.request(
       `/universities/${universityId}/university-counselling-articles/${status}?pageNumber=${pageNumber}&pageSize=${pageSize}`,
     )
@@ -210,11 +244,15 @@ export class ApiService {
     });
   }
 
+  static async getStudentMajorsByUniversity(universityId: string, pageNumber = 1, pageSize = 10): Promise<PaginatedResult<Major>> {
+    return this.request(`/universities/${universityId}/majors?pageNumber=${pageNumber}&pageSize=${pageSize}`)
+  }
+
   static async getMajorsByUniversity(universityId: string, pageNumber = 1, pageSize = 10): Promise<PaginatedResult<Major>> {
     return this.request(`/admin/universities/${universityId}/majors?pageNumber=${pageNumber}&pageSize=${pageSize}`)
   }
 
-  static async getAdmissionScores(universityId: string, year: string) {
+  static async getAdmissionScores(universityId: string, year: string): Promise<PaginatedResult<AdmissionScore>> {
     return this.request(`/universities/${universityId}/majors/admission-scores/${year}`)
   }
 
@@ -226,7 +264,7 @@ export class ApiService {
   }
 
   // Events - Updated to use correct endpoints
-  static async getEvents(status?: string, pageNumber = 1, pageSize = 10) {
+  static async getEvents(status?: string, pageNumber = 1, pageSize = 10): Promise<PaginatedResult<Event>> {
     const endpoint = status ? `/events/${status}` : "/events"
     return this.request(`${endpoint}?pageNumber=${pageNumber}&pageSize=${pageSize}`)
   }
@@ -248,11 +286,7 @@ export class ApiService {
     })
   }
 
-  static async cancelEvent(eventId: string) {
-    return this.request(`/events/cancel/${eventId}`, {
-      method: "PUT",
-    })
-  }
+  // Cancel event method is defined below with proper return type
 
   // Counselling Articles
   static async getCounsellingArticles(status?: string, pageNumber = 1, pageSize = 10) {
@@ -260,13 +294,13 @@ export class ApiService {
     return this.request(`${endpoint}?pageNumber=${pageNumber}&pageSize=${pageSize}`)
   }
 
-  static async getStaffCounsellingArticles(status: string, pageNumber = 1, pageSize = 10) {
+  static async getStaffCounsellingArticles(status: string, pageNumber = 1, pageSize = 10): Promise<PaginatedResult<CounsellingArticle>> {
     return this.request(
       `/staff/university-counselling-articles/${status}?pageNumber=${pageNumber}&pageSize=${pageSize}`,
     )
   }
 
-  static async createCounsellingArticle(data: any) {
+  static async createCounsellingArticle(data: CounsellingArticleCreateRequest) {
     return this.request("/university-counselling-articles", {
       method: "POST",
       body: JSON.stringify(data),
@@ -292,10 +326,20 @@ export class ApiService {
   }
 
   // Staff Events
-  static async getStaffEvents(universityId: string, status: string, pageNumber = 1, pageSize = 10) {
+  static async getStaffEvents(universityId: string, status: string, pageNumber = 1, pageSize = 10): Promise<PaginatedResult<Event>> {
     return this.request(
       `/staff/universities/${universityId}/events/${status}?pageNumber=${pageNumber}&pageSize=${pageSize}`,
     )
+  }
+
+  static async cancelEvent(eventId: string): Promise<{ isSuccess: boolean; data: string }> {
+    return this.request(`/events/cancel/${eventId}`, {
+      method: 'PUT',
+    })
+  }
+
+  static async getEventRegistrations(eventId: string): Promise<{ isSuccess: boolean; data: EventRegistration[] }> {
+    return this.request(`/events/${eventId}/registrations`)
   }
 
   // Admin endpoints
@@ -303,7 +347,7 @@ export class ApiService {
     return this.request(`/admin/universities?pageNumber=${pageNumber}&pageSize=${pageSize}&queryFilter=${queryFilter}`)
   }
 
-  static async getAdminEvents(status: string, pageNumber = 1, pageSize = 10) {
+  static async getAdminEvents(status: string, pageNumber = 1, pageSize = 10): Promise<PaginatedResult<Event>> {
     return this.request(`/admin/events/${status}?pageNumber=${pageNumber}&pageSize=${pageSize}`)
   }
 
@@ -428,7 +472,7 @@ export class ApiService {
   }
 
   // Master Counselling Articles
-  static async getMasterCounsellingArticles(pageNumber = 1, pageSize = 10): Promise<ApiResult<PaginatedResult<CounsellingArticle>>> {
+  static async getMasterCounsellingArticles(pageNumber = 1, pageSize = 10): Promise<PaginatedResult<CounsellingArticle>> {
     return this.request(`/master-counselling-articles?pageNumber=${pageNumber}&pageSize=${pageSize}`);
   }
 

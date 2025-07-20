@@ -153,7 +153,7 @@ export default function StudentUniversitiesPage() {
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <Building2 className="h-8 w-8 text-primary" />
-                    <Badge className={getTypeColor(university.type)}>{getTypeName(university.type)}</Badge>
+                    <Badge className={getTypeColor(university.universityType)}>{getTypeName(university.universityType)}</Badge>
                   </div>
                   <CardTitle className="line-clamp-2">{university.name}</CardTitle>
                   <CardDescription className="flex items-center">
@@ -162,7 +162,6 @@ export default function StudentUniversitiesPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {university.title && <p className="text-sm text-gray-600 line-clamp-3 mb-4">{university.title}</p>}
                   <Button asChild className="w-full">
                     <Link href={`/student/universities/${university.id}`}>View Details</Link>
                   </Button>

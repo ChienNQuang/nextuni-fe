@@ -154,7 +154,7 @@ export default function UniversityArticlesPage() {
                       <div className="flex items-center space-x-4">
                         <div>
                           <h3 className="font-medium text-gray-900">{article.title}</h3>
-                          <p className="text-sm text-gray-600 mt-1 line-clamp-2">{article.content}</p>
+                          <p className="text-sm text-gray-600 mt-1 line-clamp-2" dangerouslySetInnerHTML={{__html: article.content}}></p>
                           <div className="flex items-center space-x-4 mt-2">{getStatusBadge(article.status)}</div>
                         </div>
                       </div>
@@ -231,7 +231,7 @@ export default function UniversityArticlesPage() {
               <DialogDescription>Status: {selectedArticle && getStatusBadge(selectedArticle.status)}</DialogDescription>
             </DialogHeader>
             <div className="max-h-96 overflow-y-auto">
-              <div className="whitespace-pre-wrap text-sm">{selectedArticle?.content}</div>
+              <div className="whitespace-pre-wrap text-sm" dangerouslySetInnerHTML={{__html: selectedArticle?.content}}></div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>

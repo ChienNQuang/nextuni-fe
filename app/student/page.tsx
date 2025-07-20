@@ -6,14 +6,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { StudentLayout } from "@/components/layouts/student-layout"
-import { ApiService } from "@/lib/api"
+import { ApiService, University, Event, SubjectGroup, CounsellingArticle, UniversityRegion } from "@/lib/api"
 import { Calendar, MapPin, Users, BookOpen, ArrowRight } from "lucide-react"
 
 export default function StudentHomePage() {
-  const [universities, setUniversities] = useState<any[]>([])
-  const [events, setEvents] = useState<any[]>([])
-  const [subjectGroups, setSubjectGroups] = useState<any[]>([])
-  const [articles, setArticles] = useState<any[]>([])
+  const [universities, setUniversities] = useState<University[]>([])
+  const [events, setEvents] = useState<Event[]>([])
+  const [subjectGroups, setSubjectGroups] = useState<SubjectGroup[]>([])
+  const [articles, setArticles] = useState<CounsellingArticle[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -50,6 +50,17 @@ export default function StudentHomePage() {
     )
   }
 
+  function getRegionName(region: UniversityRegion): string{
+    switch (region) {
+      case UniversityRegion.North:
+        return "North"
+      case UniversityRegion.Middle:
+        return "Middle"
+      case UniversityRegion.South:
+        return "South"
+    }
+  }
+
   return (
     <StudentLayout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -83,15 +94,18 @@ export default function StudentHomePage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="flex flex-col gap-4">
                 {universities.slice(0, 4).map((university) => (
-                  <div key={university.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <Link href={`/student/universities/${university.id}`} key={university.id} >
+
+                  <div  className="flex items-center justify-between p-3 border rounded-lg">
                     <div>
                       <h4 className="font-medium">{university.name}</h4>
-                      <p className="text-sm text-gray-600">{university.region}</p>
+                      <p className="text-sm text-gray-600">{getRegionName(university.region)}</p>
                     </div>
                     <Badge variant="outline">{university.universityType === 0 ? "Public" : "Private"}</Badge>
                   </div>
+                  </Link>
                 ))}
               </div>
             </CardContent>
@@ -198,7 +212,6 @@ export default function StudentHomePage() {
                 {articles.slice(0, 4).map((article) => (
                   <div key={article.id} className="p-3 border rounded-lg">
                     <h4 className="font-medium">{article.title}</h4>
-                    <p className="text-sm text-gray-600 mt-1 line-clamp-2">{article.content}</p>
                     <div className="flex items-center justify-between mt-2">
                       <Badge variant="outline">System</Badge>
                       <span className="text-xs text-gray-500">

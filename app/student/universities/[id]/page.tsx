@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { StudentLayout } from "@/components/layouts/student-layout"
-import { ApiService } from "@/lib/api"
+import { AdmissionScore, ApiService, CounsellingArticle, Major, SubjectGroup, University, UniversityRegion, UniversityType } from "@/lib/api"
 import { 
   Building2, 
   MapPin, 
@@ -23,54 +23,6 @@ import {
   Award
 } from "lucide-react"
 
-// Type definitions
-interface University {
-  id: number
-  name: string
-  region: number
-  type: number
-  title?: string
-  content?: string
-}
-
-interface Major {
-  id: number
-  name: string
-  code: string
-  universityId: number
-  description?: string
-  article?: {
-    title: string
-    content: string
-  }
-}
-
-interface SubjectCombination {
-  id: number
-  majorId: number
-  year: number
-  subjects: string[]
-  requirements: string
-}
-
-interface AdmissionScore {
-  id: number
-  majorId: number
-  year: number
-  minScore: number
-  maxScore: number
-  majorName: string
-}
-
-interface AdvisoryArticle {
-  id: number
-  title: string
-  content: string
-  universityId: number
-  createdAt: string
-  author?: string
-}
-
 export default function UniversityDetailPage() {
   const params = useParams()
   const universityId = params.id as string
@@ -79,18 +31,25 @@ export default function UniversityDetailPage() {
   const [university, setUniversity] = useState<University | null>(null)
   const [majors, setMajors] = useState<Major[]>([])
   const [selectedMajor, setSelectedMajor] = useState<Major | null>(null)
-  const [subjectCombinations, setSubjectCombinations] = useState<SubjectCombination[]>([])
+  const [subjectCombinations, setSubjectCombinations] = useState<SubjectGroup[]>([])
+  const [majorIntroductionBlogs, setMajorIntroductionBlogs] = useState<{ 
+    title: string;
+     content: string;
+      majorId: string;
+     }[]>([]);
   const [admissionScores, setAdmissionScores] = useState<AdmissionScore[]>([])
-  const [advisoryArticles, setAdvisoryArticles] = useState<AdvisoryArticle[]>([])
+  const [advisoryArticles, setAdvisoryArticles] = useState<CounsellingArticle[]>([])
+  const [title, setTitle] = useState<string>("")
+  const [content, setContent] = useState<string>("")
   
   // UI states
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("information")
-  const [selectedYear, setSelectedYear] = useState<number>(2024)
-  const [selectedScoreYear, setSelectedScoreYear] = useState<number>(2024)
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear())
+  const [selectedScoreYear, setSelectedScoreYear] = useState<number>(new Date().getFullYear())
 
-  // Available years for dropdowns
-  const availableYears = [2024, 2023, 2022, 2021, 2020]
+  // Available years for dropdowns, 5 years latest
+  const availableYears = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i)
 
   console.log("University ID:", universityId)
 
@@ -103,13 +62,18 @@ export default function UniversityDetailPage() {
   const fetchUniversityData = async () => {
     try {
       setLoading(true)
+
+      const universityDetailResponse = await ApiService.getUniversityIntroductionBlog(String(universityId))
+      setTitle(universityDetailResponse.data?.title || "")
+      setContent(universityDetailResponse.data?.content || "")
       
       // Fetch university details
       const universityResponse = await ApiService.getUniversityById(String(universityId))
-      setUniversity(universityResponse.data)
+      setUniversity(universityResponse.data )
       
       // Fetch majors
-      const majorsResponse = await ApiService.getMajorsByUniversity(String(universityId))
+      const majorsResponse = await ApiService.getStudentMajorsByUniversity(String(universityId))
+      console.log("Majors:", majorsResponse)
       setMajors(majorsResponse.data?.items || [])
       
       // Fetch admission scores
@@ -119,6 +83,13 @@ export default function UniversityDetailPage() {
       // Fetch advisory articles
       const articlesResponse = await ApiService.getUniversityConsellingArticles(String(universityId), "Published", 1, 100)
       setAdvisoryArticles(articlesResponse.data?.items || [])
+
+      majors.forEach(async major => {
+        const articleResponse = await ApiService.getMajorIntroductionBlog(String(major.id))
+        if (articleResponse.data) {
+          setMajorIntroductionBlogs(prev => [...prev, { title: articleResponse.data?.title || "", content: articleResponse.data?.content || "", majorId: major.id }])
+        }
+      });
       
     } catch (error) {
       console.error("Failed to fetch university data:", error)
@@ -126,7 +97,6 @@ export default function UniversityDetailPage() {
       setLoading(false)
     }
   }
-
 
 
   const handleMajorSelect = async (major: Major) => {
@@ -147,11 +117,11 @@ export default function UniversityDetailPage() {
     }
   }
 
-  const getTypeName = (type: number) => {
+  const getTypeName = (type: UniversityType) => {
     switch (type) {
-      case 0: return "Public"
-      case 1: return "Private"
-      case 2: return "International"
+      case UniversityType.Public: return "Public"
+      case UniversityType.Private: return "Private"
+      case UniversityType.International: return "International"
       default: return "Unknown"
     }
   }
@@ -172,6 +142,11 @@ export default function UniversityDetailPage() {
   const formatScore = (min: number, max: number) => {
     if (min === 0 && max === 0) return "0 - 0"
     return `${min} - ${max}`
+  }
+
+  const getMajorIntroductionBlog = (majorId: string) => {
+    const blog = majorIntroductionBlogs.find(blog => blog.majorId === majorId)
+    return blog
   }
 
   if (loading) {
@@ -213,8 +188,8 @@ export default function UniversityDetailPage() {
                       <MapPin className="mr-1 h-4 w-4" />
                       {getRegionName(university.region)} Region
                     </div>
-                    <Badge className={getTypeColor(university.type)}>
-                      {getTypeName(university.type)}
+                    <Badge className={getTypeColor(university.universityType)}>
+                      {getTypeName(university.universityType)}
                     </Badge>
                   </div>
                 </div>
@@ -270,7 +245,7 @@ export default function UniversityDetailPage() {
                       <Users className="h-5 w-5 text-gray-500" />
                       <div>
                         <p className="text-sm text-gray-500">Type</p>
-                        <p className="font-medium">{getTypeName(university.type)}</p>
+                        <p className="font-medium">{getTypeName(university.universityType)}</p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-3">
@@ -284,12 +259,12 @@ export default function UniversityDetailPage() {
                   
                   <Separator />
                   
-                  {university.title && (
+                  {title && content && (
                     <div>
-                      <h3 className="text-lg font-semibold mb-3">{university.title}</h3>
+                      <h3 className="text-lg font-semibold mb-3">{title}</h3>
                       <div className="prose max-w-none text-gray-700">
-                        {university.content ? (
-                          <div dangerouslySetInnerHTML={{ __html: university.content }} />
+                        {content ? (
+                          <div dangerouslySetInnerHTML={{ __html: content }} />
                         ) : (
                           <p>No detailed information available.</p>
                         )}
@@ -365,11 +340,11 @@ export default function UniversityDetailPage() {
                           <h4 className="font-semibold text-lg">{selectedMajor.name}</h4>
                           <p className="text-sm text-gray-500 mb-3">{selectedMajor.code}</p>
                           
-                          {selectedMajor.article && (
+                          {getMajorIntroductionBlog(selectedMajor.id) && (
                             <div>
-                              <h5 className="font-medium mb-2">{selectedMajor.article.title}</h5>
+                              <h5 className="font-medium mb-2">{getMajorIntroductionBlog(selectedMajor.id)?.title}</h5>
                               <div className="prose max-w-none text-sm text-gray-700">
-                                <div dangerouslySetInnerHTML={{ __html: selectedMajor.article.content }} />
+                                <div dangerouslySetInnerHTML={{ __html: getMajorIntroductionBlog(selectedMajor.id)?.content || "" }} />
                               </div>
                             </div>
                           )}
@@ -385,10 +360,10 @@ export default function UniversityDetailPage() {
                                 <div key={combination.id} className="p-3 bg-gray-50 rounded-lg">
                                   <div className="flex flex-wrap gap-2 mb-2">
                                     {combination.subjects.map((subject, index) => (
-                                      <Badge key={index} variant="secondary">{subject}</Badge>
+                                      <Badge key={index} variant="secondary">{subject.name}</Badge>
                                     ))}
                                   </div>
-                                  <p className="text-sm text-gray-600">{combination.requirements}</p>
+                                  <p className="text-sm text-gray-600">{combination.subjects.length}</p>
                                 </div>
                               ))}
                             </div>
@@ -428,17 +403,17 @@ export default function UniversityDetailPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {getScoresForYear(selectedScoreYear).length > 0 ? (
+                    {admissionScores.length > 0 ? (
                       <div className="grid gap-4">
-                        {getScoresForYear(selectedScoreYear).map((score) => (
-                          <div key={score.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        {admissionScores.map((score) => (
+                          <div key={score.majorId} className="flex items-center justify-between p-4 border rounded-lg">
                             <div>
                               <h4 className="font-medium">{score.majorName}</h4>
                               <p className="text-sm text-gray-500">Academic Year {score.year}</p>
                             </div>
                             <div className="text-right">
                               <p className="text-lg font-semibold text-primary">
-                                {formatScore(score.minScore, score.maxScore)}
+                                {formatScore(score.examScore, score.gpaScore)}
                               </p>
                               <p className="text-sm text-gray-500">Score Range</p>
                             </div>

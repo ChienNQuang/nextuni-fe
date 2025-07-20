@@ -1,31 +1,25 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+
 import { AdminLayout } from "@/components/layouts/admin-layout"
-import { ApiService } from "@/lib/api"
-import { Search, Eye, Check, X, Calendar, MapPin } from "lucide-react"
+import { ApiService, Event, EventStatus } from "@/lib/api"
+import { Search, Eye, Check, X, MapPin, Calendar } from "lucide-react"
 import { toast } from "sonner"
 
 export default function EventsPage() {
-  const [events, setEvents] = useState<any[]>([])
+  const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("Pending")
-  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
-  const [selectedEvent, setSelectedEvent] = useState<any>(null)
+  const router = useRouter()
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
 
@@ -49,7 +43,7 @@ export default function EventsPage() {
 
   const handleApproveEvent = async (eventId: string) => {
     try {
-      await ApiService.request(`/events/approve/${eventId}`, { method: "PUT" })
+      await ApiService.approveEvent(eventId)
       toast.success("Event approved successfully")
       fetchEvents()
     } catch (error) {
@@ -60,18 +54,13 @@ export default function EventsPage() {
 
   const handleRejectEvent = async (eventId: string) => {
     try {
-      await ApiService.request(`/events/reject/${eventId}`, { method: "PUT" })
+      await ApiService.rejectEvent(eventId)
       toast.success("Event rejected successfully")
       fetchEvents()
     } catch (error) {
       console.error("Failed to reject event:", error)
       toast.error("Failed to reject event")
     }
-  }
-
-  const handleViewEvent = (event: any) => {
-    setSelectedEvent(event)
-    setIsViewDialogOpen(true)
   }
 
   const getStatusBadge = (status: number) => {
@@ -183,32 +172,33 @@ export default function EventsPage() {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Button variant="outline" size="sm" onClick={() => handleViewEvent(event)}>
-                        <Eye className="mr-2 h-4 w-4" />
-                        View
+                      <Button variant="ghost" size="icon" asChild>
+                        <Link href={`/admin/events/${event.id}`}>
+                          <Eye className="h-4 w-4" />
+                        </Link>
                       </Button>
-                      {statusFilter === "Pending" && (
-                        <>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleApproveEvent(event.id)}
-                            className="text-green-600 hover:text-green-700"
-                          >
-                            <Check className="mr-2 h-4 w-4" />
-                            Approve
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleRejectEvent(event.id)}
-                            className="text-red-600 hover:text-red-700"
-                          >
-                            <X className="mr-2 h-4 w-4" />
-                            Reject
-                          </Button>
-                        </>
-                      )}
+                      {event.status == EventStatus.Pending &&
+                      <>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleApproveEvent(event.id)}
+                        className="text-green-600 hover:text-green-700"
+                      >
+                        <Check className="mr-2 h-4 w-4" />
+                        Approve
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleRejectEvent(event.id)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <X className="mr-2 h-4 w-4" />
+                        Reject
+                      </Button>
+                      </>}
                     </div>
                   </div>
                 ))}
@@ -245,71 +235,6 @@ export default function EventsPage() {
             </Button>
           </div>
         )}
-
-        {/* View Event Dialog */}
-        <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-          <DialogContent className="max-w-4xl">
-            <DialogHeader>
-              <DialogTitle>{selectedEvent?.name}</DialogTitle>
-              <DialogDescription>
-                <div className="flex items-center space-x-4 mt-2">
-                  {selectedEvent && getStatusBadge(selectedEvent.status)}
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Calendar className="mr-1 h-4 w-4" />
-                    {selectedEvent && new Date(selectedEvent.startDate).toLocaleDateString()}
-                  </div>
-                  {selectedEvent?.address && (
-                    <div className="flex items-center text-sm text-gray-600">
-                      <MapPin className="mr-1 h-4 w-4" />
-                      {selectedEvent.address}
-                    </div>
-                  )}
-                </div>
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <h4 className="font-medium">Event Title</h4>
-                <p className="text-sm text-gray-600">{selectedEvent?.title}</p>
-              </div>
-              <div>
-                <h4 className="font-medium">Event Content</h4>
-                <div className="max-h-60 overflow-y-auto">
-                  <div className="whitespace-pre-wrap text-sm text-gray-600">{selectedEvent?.content}</div>
-                </div>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>
-                Close
-              </Button>
-              {selectedEvent?.status === 0 && (
-                <>
-                  <Button
-                    onClick={() => {
-                      handleApproveEvent(selectedEvent.id)
-                      setIsViewDialogOpen(false)
-                    }}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    <Check className="mr-2 h-4 w-4" />
-                    Approve
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    onClick={() => {
-                      handleRejectEvent(selectedEvent.id)
-                      setIsViewDialogOpen(false)
-                    }}
-                  >
-                    <X className="mr-2 h-4 w-4" />
-                    Reject
-                  </Button>
-                </>
-              )}
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </div>
     </AdminLayout>
   )

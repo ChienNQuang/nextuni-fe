@@ -1,15 +1,10 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useParams, useRouter } from "next/navigation"
-import Link from "next/link"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { StudentLayout } from "@/components/layouts/student-layout"
-import { ApiService } from "@/lib/api"
 import { 
   Calendar,
   Clock,
@@ -20,115 +15,69 @@ import {
   ArrowLeft,
   CalendarDays,
   Timer,
-  AlertCircle
+  AlertCircle,
+  ExternalLink,
+  Edit,
+  Trash2,
+  UserCheck,
+  ListChecks
 } from "lucide-react"
+import Link from "next/link"
+import { format } from "date-fns"
+import { cn } from "@/lib/utils"
+import { useRouter } from "next/navigation"
 
-// Type definitions
-interface Event {
-  name: string
-  id: string
-  title: string
-  content: string
-  status: number
-  universityId: string
-  startDate: string
-  endDate: string
-  // Optional additional fields for enhanced functionality
-  registrationDeadline?: string
-  location?: string
-  maxParticipants?: number
-  currentParticipants?: number
-  organizerName?: string
-  category?: string
-  isRegistered?: boolean
-  registrationFee?: number
-  requirements?: string[]
-  contactInfo?: string
+interface EventDetailProps {
+  event: {
+    name: string
+    id: string
+    title: string
+    content: string
+    status: number
+    universityId: string
+    startDate: string
+    endDate: string
+    // Optional additional fields for enhanced functionality
+    registrationDeadline?: string
+    location?: string
+    maxParticipants?: number
+    currentParticipants?: number
+    organizerName?: string
+    category?: string
+    isRegistered?: boolean
+    registrationFee?: number
+    requirements?: string[]
+    contactInfo?: string
+  }
+  showActions?: boolean
+  onRegister?: () => Promise<void>
+  onEdit?: () => void
+  onDelete?: () => void
+  onViewRegistrations?: () => void
+  onCancel?: () => void
+  onApprove?: () => void
+  onReject?: () => void
+  loading?: boolean
+  registering?: boolean
+  isAdmin?: boolean
+  isStaff?: boolean
 }
 
-interface RegistrationResponse {
-  success: boolean
-  message: string
-  registrationId?: number
-}
-
-export default function EventDetailPage() {
-  const params = useParams()
-  const router = useRouter()
-  const eventId = params.id as string
-  
-  const [event, setEvent] = useState<Event | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [registering, setRegistering] = useState(false)
-  const [registrationStatus, setRegistrationStatus] = useState<{
-    type: 'success' | 'error' | null
-    message: string
-  }>({ type: null, message: '' })
-
-  useEffect(() => {
-    if (eventId) {
-      fetchEventData()
-    }
-  }, [eventId])
-
-  const fetchEventData = async () => {
-    try {
-      setLoading(true)
-      const response = await ApiService.getEventById(eventId)
-      setEvent(response.data)
-    } catch (error) {
-      console.error("Failed to fetch event data:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleRegister = async () => {
-    if (!event || !isEventActive()) return
-
-    try {
-      setRegistering(true)
-      const response = await ApiService.registerForEvent(eventId)
-      
-      if (response.isSuccess) {
-        setRegistrationStatus({
-          type: 'success',
-          message: response.message || 'Successfully registered for the event!'
-        })
-        // Update local state
-        setEvent(prev => prev ? { ...prev, isRegistered: true, currentParticipants: (prev.currentParticipants || 0) + 1 } : null)
-      } else {
-        setRegistrationStatus({
-          type: 'error',
-          message: response.message || 'Failed to register for the event'
-        })
-      }
-    } catch (error) {
-      setRegistrationStatus({
-        type: 'error',
-        message: 'An error occurred while registering. Please try again.'
-      })
-    } finally {
-      setRegistering(false)
-    }
-  }
-
-  const isEventActive = () => {
-    if (!event) return false
-    
-    const now = new Date()
-    const registrationDeadline = event.registrationDeadline ? new Date(event.registrationDeadline) : new Date(event.startDate)
-    const eventEnd = new Date(event.endDate)
-    
-    return (
-      event.status === 0 && // 0 = active
-      now <= registrationDeadline &&
-      now <= eventEnd &&
-      !event.isRegistered &&
-      (event.maxParticipants ? (event.currentParticipants || 0) < event.maxParticipants : true)
-    )
-  }
-
+export function EventDetail({
+  event,
+  showActions = true,
+  onRegister,
+  onEdit,
+  onDelete,
+  onViewRegistrations,
+  onCancel,
+  onApprove,
+  onReject,
+  loading = false,
+  registering = false,
+  isAdmin = false,
+  isStaff = false,
+}: EventDetailProps) {
   const getStatusBadge = (status: number) => {
     switch (status) {
       case 0:
@@ -154,9 +103,8 @@ export default function EventDetailPage() {
     const now = new Date()
     const registrationDeadline = event.registrationDeadline ? new Date(event.registrationDeadline) : new Date(event.startDate)
     const eventStart = new Date(event.startDate)
-    const eventEnd = new Date(event.endDate)
+    const eventEnd = event.endDate ? new Date(event.endDate) : new Date(event.startDate)
     
-    // Status: 0 = published, 1 = ongoing, 2 = cancelled, 3 = completed
     if (event.status === 2) {
       return { text: 'Cancelled', color: 'bg-red-100 text-red-800', icon: XCircle }
     }
@@ -192,15 +140,6 @@ export default function EventDetailPage() {
     return { text: 'Unknown', color: 'bg-gray-100 text-gray-800', icon: AlertCircle }
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-  }
-
   const formatTime = (dateString: string) => {
     return new Date(dateString).toLocaleTimeString('en-US', {
       hour: '2-digit',
@@ -218,36 +157,25 @@ export default function EventDetailPage() {
     })
   }
 
-  if (loading) {
-    return (
-      <StudentLayout>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-        </div>
-      </StudentLayout>
-    )
-  }
-
-  if (!event) {
-    return (
-      <StudentLayout>
-        <div className="text-center py-12">
-          <Calendar className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">Event not found</h3>
-          <p className="mt-1 text-sm text-gray-500">The event you're looking for doesn't exist.</p>
-          <Button asChild className="mt-4">
-            <Link href="/student/events">Back to Events</Link>
-          </Button>
-        </div>
-      </StudentLayout>
-    )
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
   }
 
   const statusInfo = getEventStatusInfo()
-  const StatusIcon = statusInfo.icon
+  const StatusIcon = statusInfo.icon || AlertCircle
+  const isEventActive = event.status === 0 || event.status === 1
+  const isRegistrationOpen = isEventActive && 
+    (!event.registrationDeadline || new Date() <= new Date(event.registrationDeadline)) &&
+    (!event.maxParticipants || (event.currentParticipants || 0) < event.maxParticipants)
+
+  const router = useRouter()
 
   return (
-    <StudentLayout>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-6">
           {/* Header */}
@@ -262,16 +190,6 @@ export default function EventDetailPage() {
               <span>Event Details</span>
             </div>
           </div>
-
-          {/* Registration Status Alert */}
-          {registrationStatus.type && (
-            <Alert className={registrationStatus.type === 'success' ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription className={registrationStatus.type === 'success' ? 'text-green-800' : 'text-red-800'}>
-                {registrationStatus.message}
-              </AlertDescription>
-            </Alert>
-          )}
 
           {/* Event Header Card */}
           <Card>
@@ -294,16 +212,6 @@ export default function EventDetailPage() {
                     </CardDescription>
                   )}
                 </div>
-                {isEventActive() && (
-                  <Button 
-                    onClick={handleRegister} 
-                    disabled={registering}
-                    size="lg"
-                    className="ml-4"
-                  >
-                    {registering ? 'Registering...' : 'Register Now'}
-                  </Button>
-                )}
               </div>
             </CardHeader>
           </Card>
@@ -434,21 +342,7 @@ export default function EventDetailPage() {
             </Card>
           )}
 
-          {/* Registration Button (Mobile) */}
-          {isEventActive() && (
-            <div className="md:hidden">
-              <Button 
-                onClick={handleRegister} 
-                disabled={registering}
-                size="lg"
-                className="w-full"
-              >
-                {registering ? 'Registering...' : 'Register Now'}
-              </Button>
-            </div>
-          )}
         </div>
       </div>
-    </StudentLayout>
   )
 }
