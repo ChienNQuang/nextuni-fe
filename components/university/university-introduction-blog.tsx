@@ -19,6 +19,7 @@ export function UniversityIntroductionBlog({
   initialContent = '',
   onSave 
 }: UniversityIntroductionBlogProps) {
+  const [title, setTitle] = useState('')
   const [content, setContent] = useState(initialContent)
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -30,6 +31,7 @@ export function UniversityIntroductionBlog({
       const response = await ApiService.getUniversityIntroductionBlog(universityId)
       
       if (response?.isSuccess && response.data) {
+        setTitle(response.data.title || '')
         setContent(response.data.content || '')
       }
     } catch (error) {
@@ -49,7 +51,7 @@ export function UniversityIntroductionBlog({
       setIsSaving(true)
       const response = await ApiService.createUniversityIntroductionBlog({
         universityId,
-        title: 'Introduction',
+        title,
         content
       })
       
@@ -72,7 +74,7 @@ export function UniversityIntroductionBlog({
     return (
       <Card>
         <CardHeader>
-          <CardTitle>University Introduction</CardTitle>
+          <CardTitle>{title}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-32 flex items-center justify-center">
@@ -86,7 +88,7 @@ export function UniversityIntroductionBlog({
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>University Introduction</CardTitle>
+        <CardTitle>{title}</CardTitle>
         <div className="flex gap-2">
           {isEditing ? (
             <>
