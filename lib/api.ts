@@ -129,6 +129,16 @@ interface RegisterUserRequest {
 }
 
 export class ApiService {
+  static rejectEvent(eventId: string) {
+    return this.request(`/events/reject/${eventId}`, {
+      method: "PUT",
+    })
+  }
+  static approveEvent(eventId: string) {
+    return this.request(`/events/approve/${eventId}`, {
+      method: "PUT",
+    })
+  }
   static registerUser(request: RegisterUserRequest) {
     return this.request("/users/register", {
       method: "POST",

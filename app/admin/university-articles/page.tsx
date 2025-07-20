@@ -118,7 +118,7 @@ export default function UniversityArticlesPage() {
                   />
                 </div>
               </div>
-              <Select value={statusFilter.toString()} onValueChange={(value) => setStatusFilter(Number(value))}>
+              <Select value={CounsellingArticleStatus[statusFilter]} onValueChange={(value) => setStatusFilter(Number(value))}>
                 <SelectTrigger className="w-48">
                   <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>

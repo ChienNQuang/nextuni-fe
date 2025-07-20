@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { StudentLayout } from "@/components/layouts/student-layout"
 import { ApiService, University, Event, SubjectGroup, CounsellingArticle, UniversityRegion } from "@/lib/api"
 import { Calendar, MapPin, Users, BookOpen, ArrowRight } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export default function StudentHomePage() {
   const [universities, setUniversities] = useState<University[]>([])
@@ -16,20 +17,34 @@ export default function StudentHomePage() {
   const [articles, setArticles] = useState<CounsellingArticle[]>([])
   const [loading, setLoading] = useState(true)
 
+  const [universitiesQueryFilter, setUniversitiesQueryFilter] = useState(0)
+
   useEffect(() => {
     fetchHomeData()
+    fetchUniversities()
   }, [])
+
+  useEffect(() => {
+    fetchUniversities()
+  }, [universitiesQueryFilter])
+
+  const fetchUniversities = async () => {
+    try {
+      const universitiesRes = await ApiService.getUniversities(1, 4, universitiesQueryFilter)
+      setUniversities(universitiesRes.data?.items || [])
+    } catch (error) {
+      console.error("Failed to fetch universities:", error)
+    }
+  }
 
   const fetchHomeData = async () => {
     try {
-      const [universitiesRes, eventsRes, subjectGroupsRes, articlesRes] = await Promise.all([
-        ApiService.getUniversities(1, 4, 1), // North region filter
+      const [eventsRes, subjectGroupsRes, articlesRes] = await Promise.all([
         ApiService.getEvents("Published", 1, 4),
         ApiService.getSubjectGroups(1, 4),
         ApiService.getMasterCounsellingArticles(1, 4),
       ])
 
-      setUniversities(universitiesRes.data?.items || [])
       setEvents(eventsRes.data?.items || [])
       setSubjectGroups(subjectGroupsRes.data?.items || [])
       setArticles(articlesRes.data?.items || [])
@@ -85,12 +100,25 @@ export default function StudentHomePage() {
                   </CardTitle>
                   <CardDescription>Top universities in the North region</CardDescription>
                 </div>
-                <Link href="/student/universities?region=North">
-                  <Button variant="outline" size="sm">
-                    View All
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
+                <div className="flex items-center gap-2">
+                  <Select value={universitiesQueryFilter.toString()} onValueChange={(value) => setUniversitiesQueryFilter(Number(value))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a region" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0">None</SelectItem>
+                      <SelectItem value="1">North</SelectItem>
+                      <SelectItem value="2">Middle</SelectItem>
+                      <SelectItem value="3">South</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Link href="/student/universities?region=North">
+                    <Button variant="outline" size="sm">
+                      View All
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
