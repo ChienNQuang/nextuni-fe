@@ -419,9 +419,11 @@ export default function UniversityDetailPage() {
                             </div>
                             <div className="text-right">
                               <p className="text-lg font-semibold text-primary">
-                                {formatScore(score.examScore, score.gpaScore)}
+                                Exam score: {score.examScore}
                               </p>
-                              <p className="text-sm text-gray-500">Score Range</p>
+                              <p className="text-lg font-semibold text-primary">
+                                GPA score: {score.gpaScore}
+                              </p>
                             </div>
                           </div>
                         ))}

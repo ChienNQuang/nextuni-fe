@@ -29,6 +29,10 @@ export interface Major {
   code: string
   universityId: string
   isDeleted: boolean
+  subjectGroupByYear?: Record<string, Array<{
+    id: string
+    code: string
+  }>>
 }
 
 export interface Subject {
@@ -276,6 +280,10 @@ export class ApiService {
     return this.request(`/admin/universities/${universityId}/majors?pageNumber=${pageNumber}&pageSize=${pageSize}`)
   }
 
+  static async getAdminMajors(universityId: string, pageNumber = 1, pageSize = 10): Promise<PaginatedResult<Major>> {
+    return this.request(`/admin/universities/${universityId}/majors?pageNumber=${pageNumber}&pageSize=${pageSize}`)
+  }
+
   static async getAdmissionScores(universityId: string, year: string): Promise<ApiResult<AdmissionScore[]>> {
     return this.request(`/universities/${universityId}/majors/admission-scores/${year}`)
   }
@@ -412,6 +420,13 @@ export class ApiService {
   }
 
   // Subject Groups
+  static async updateMajorSubjectGroups(majorId: string, year: number, groupIds: string[]): Promise<ApiResult<boolean>> {
+    return this.request(`/majors/${majorId}/subject-groups/${year}`, {
+      method: 'POST',
+      body: JSON.stringify({ groupIds })
+    })
+  }
+
   static async getAdminSubjectGroups(pageNumber = 1, pageSize = 10): Promise<PaginatedResult<SubjectGroup>> {
     return this.request(`/admin/subject-groups?pageNumber=${pageNumber}&pageSize=${pageSize}`)
   }

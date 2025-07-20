@@ -17,12 +17,14 @@ import {
 } from "@/lib/api"
 import { IntroductionBlog } from "@/components/introduction-blog"
 import { UniversityIntroductionBlog } from "@/components/university/university-introduction-blog"
-import { Edit, Plus, Power, User, BookOpen, Trophy, Building2 } from "lucide-react"
+import { Edit, Plus, Power, User, BookOpen, Trophy, Building2, ChevronDown, ChevronUp } from "lucide-react"
 import { AddMajorDialog } from "@/components/dialogs/add-major-dialog"
 import { EditMajorDialog } from "@/components/dialogs/edit-major-dialog"
 import { AddStaffDialog } from "@/components/dialogs/add-staff-dialog"
 import { toast } from "sonner"
 import { UpdateScoreDialog } from "@/components/dialogs/update-score-dialog"
+import { MajorSubjectGroups } from "@/components/major-subject-groups"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 type UniversityWithRegion = Omit<University, 'title' | 'description'> & {
   region: UniversityRegion;
@@ -38,12 +40,13 @@ export default function UniversityDetailPage() {
   const [university, setUniversity] = useState<UniversityWithRegion | null>(null)
   const [majors, setMajors] = useState<Major[]>([])
   const [admissionScores, setAdmissionScores] = useState<AdmissionScore[]>([]);
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString())
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [loading, setLoading] = useState(false)
   const [staffAccount, setStaffAccount] = useState<any>(null)
   const [deletingStaffId, setDeletingStaffId] = useState<string | null>(null)
   const [isAddMajorDialogOpen, setIsAddMajorDialogOpen] = useState(false)
   const [editingMajor, setEditingMajor] = useState<Major | null>(null)
+  const [expandedMajors, setExpandedMajors] = useState<Record<string, boolean>>({})
   const [updatingScore, setUpdatingScore] = useState<{
     majorId: string
     majorName: string
@@ -149,6 +152,31 @@ export default function UniversityDetailPage() {
     }
   }
 
+  // handleSaveMajorBlog is already defined above with a different signature
+
+  const toggleMajorExpansion = (majorId: string) => {
+    setExpandedMajors(prev => ({
+      ...prev,
+      [majorId]: !prev[majorId]
+    }))
+  }
+
+  const handleUpdateSubjectGroups = async (majorId: string, year: number, groupIds: string[]) => {
+    try {
+      const response = await ApiService.updateMajorSubjectGroups(majorId, year, groupIds)
+      if (response.isSuccess) {
+        // Refresh majors to get updated subject groups
+        const response = await ApiService.getAdminMajors(universityId, 1, 100)
+        if (response.data) {
+          setMajors(response.data.items)
+        }
+      }
+    } catch (error) {
+      console.error("Failed to update subject groups:", error)
+      throw error
+    }
+  }
+
   const fetchMajors = async () => {
     try {
       const result = await ApiService.getMajorsByUniversity(universityId)
@@ -179,7 +207,7 @@ export default function UniversityDetailPage() {
 
   const fetchAdmissionScores = async () => {
     try {
-      const response = await ApiService.getAdmissionScores(universityId, selectedYear);
+      const response = await ApiService.getAdmissionScores(universityId, selectedYear.toString());
       if (response.isSuccess) {
         // Ensure we're setting an array of AdmissionScore
         const scores = Array.isArray(response.data) ? response.data : [];
@@ -289,6 +317,7 @@ export default function UniversityDetailPage() {
       </AdminLayout>
     )
   }
+  const availableYears = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i)
 
   return (
     <AdminLayout>
@@ -384,6 +413,23 @@ export default function UniversityDetailPage() {
                           <Button 
                             variant="outline" 
                             size="sm"
+                            onClick={() => toggleMajorExpansion(major.id)}
+                          >
+                            {expandedMajors[major.id] ? (
+                              <>
+                                <ChevronUp className="mr-2 h-4 w-4" />
+                                Hide Details
+                              </>
+                            ) : (
+                              <>
+                                <ChevronDown className="mr-2 h-4 w-4" />
+                                Manage Groups
+                              </>
+                            )}
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
                             onClick={() => setEditingMajor(major)}
                           >
                             <Edit className="mr-2 h-4 w-4" />
@@ -400,14 +446,28 @@ export default function UniversityDetailPage() {
                           </Button>
                         </div>
                       </div>
-                      <div className="p-4">
-                        <IntroductionBlog
-                          id={major.id}
-                          type="major"
-                          onSave={handleSaveMajorBlog}
-                          onFetch={fetchMajorBlog}
-                        />
-                      </div>
+                      
+                      {expandedMajors[major.id] && (
+                        <div className="p-6 border-t">
+                          <h4 className="font-medium mb-4">Subject Group Management</h4>
+                          <MajorSubjectGroups 
+                            majorId={major.id}
+                            subjectGroups={major.subjectGroupByYear?.[selectedYear] || []}
+                            initialYear={selectedYear}
+                            onUpdate={(year, groups) => handleUpdateSubjectGroups(major.id, year, groups)}
+                          />
+                          
+                          <div className="mt-6">
+                            <h4 className="font-medium mb-2">Introduction Blog</h4>
+                            <IntroductionBlog
+                              id={major.id}
+                              type="major"
+                              onSave={handleSaveMajorBlog}
+                              onFetch={fetchMajorBlog}
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -424,17 +484,16 @@ export default function UniversityDetailPage() {
                     <p className="text-sm text-gray-500">View and update admission scores by year</p>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <select
-                      value={selectedYear}
-                      onChange={(e) => setSelectedYear(e.target.value)}
-                      className="border rounded-md px-3 py-2 text-sm"
-                    >
-                      {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map((year) => (
-                        <option key={year} value={year}>
-                          {year}
-                        </option>
-                      ))}
-                    </select>
+                    <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
+                      <SelectTrigger className="w-32">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableYears.map(year => (
+                          <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </CardHeader>
@@ -483,6 +542,7 @@ export default function UniversityDetailPage() {
                                       examScore: score.examScore
                                     })
                                   }
+                                  disabled={selectedYear !== new Date().getFullYear()}
                                 >
                                   <Edit className="h-4 w-4 mr-2" />
                                   Edit
