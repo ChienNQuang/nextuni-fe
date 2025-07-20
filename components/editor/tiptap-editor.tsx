@@ -6,7 +6,6 @@ import TextAlign from '@tiptap/extension-text-align'
 import Link from '@tiptap/extension-link'
 import Image from '@tiptap/extension-image'
 import Underline from '@tiptap/extension-underline'
-import TextStyle from '@tiptap/extension-text-style'
 import { Color } from '@tiptap/extension-color'
 import { BubbleMenu } from '@tiptap/react/menus'
 import { useCallback, useEffect } from 'react'
@@ -39,7 +38,6 @@ export function TipTapEditor({ content, onChange, placeholder = 'Write something
       }),
       Image,
       Underline,
-      TextStyle,
       Color,
     ],
     content: content || '',

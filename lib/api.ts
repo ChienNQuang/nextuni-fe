@@ -120,7 +120,21 @@ export interface PaginatedResult<T> {
   }
 }
 
+interface RegisterUserRequest {
+  email: string
+  password: string
+  firstName: string
+  lastName: string
+  phoneNumber: string
+}
+
 export class ApiService {
+  static registerUser(request: RegisterUserRequest) {
+    return this.request("/users/register", {
+      method: "POST",
+      body: JSON.stringify(request),
+    })
+  }
   private static baseUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.nextuni.com"
 
   static async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResult<T>> {
@@ -453,12 +467,13 @@ export class ApiService {
     content: string;
   }) {
     return this.request<{ id: string }>(
-      `/majors/${data.majorId}/introduction-blog`,
+      `/majors/introduction-blog`,
       {
         method: 'POST',
         body: JSON.stringify({
           title: data.title,
-          content: data.content
+          content: data.content,
+          majorId: data.majorId
         })
       }
     )

@@ -102,12 +102,50 @@ export function IntroductionBlog({ id, type, title: initialTitle, content: initi
 
   if (!hasBlog) {
     return (
+      <>
       <div className="border rounded-lg p-6 text-center">
         <p className="text-gray-600 mb-4">No introduction blog found for this {type}.</p>
         <Button onClick={() => setIsEditing(true)}>
           Add Introduction Blog
         </Button>
       </div>
+      <Dialog open={isEditing} onOpenChange={setIsEditing}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Edit {type === 'university' ? 'University' : 'Major'} Introduction</DialogTitle>
+            <DialogDescription>
+              Update the introduction content for this {type}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Title</label>
+              <Input
+                placeholder={`Enter ${type} introduction title`}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Content</label>
+              <TipTapEditor
+                content={content}
+                onChange={setContent}
+                placeholder={`Write ${type} introduction content here...`}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditing(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave} disabled={loading}>
+              {loading ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      </>
     )
   }
 
