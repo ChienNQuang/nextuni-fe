@@ -92,6 +92,13 @@ export function StudentLayout({ children }: { children: React.ReactNode }) {
                   Admission Info
                 </Button>
               </div>
+
+              <div>
+                <Button variant="ghost" onClick={() => router.push('/student/my-events')} className="text-gray-700 hover:text-blue-600">
+                  <Calendar className="inline-block w-4 h-4 mr-2" />
+                  My Events
+                </Button>
+              </div>
             </div>
 
             {/* User Menu */}

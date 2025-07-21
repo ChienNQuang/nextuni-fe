@@ -374,6 +374,25 @@ export class ApiService {
     return this.request(`/events/${eventId}/registrations`)
   }
 
+  static async getStudentEventRegistrations() {
+    return this.request<{
+        eventRegistrationId: string;
+        eventId: string;
+        eventName: string;
+        eventDate: string;
+        eventStatus: number;
+      }[]>('/events/personal-registrations')
+  }
+
+  static async cancelEventRegistration(registrationId: string) {
+    return this.request<{
+      isSuccess: boolean;
+      data: string;
+    }>(`/event-registrations/${registrationId}/cancel`, {
+      method: 'PUT'
+    })
+  }
+
   // Admin endpoints
   static async getAdminUniversities(pageNumber = 1, pageSize = 10, queryFilter = 0): Promise<PaginatedResult<University>> {
     return this.request(`/admin/universities?pageNumber=${pageNumber}&pageSize=${pageSize}&queryFilter=${queryFilter}`)
