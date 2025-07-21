@@ -179,7 +179,7 @@ export class ApiService {
     const url = pageNumber && pageSize 
       ? `/universities?pageNumber=${pageNumber}&pageSize=${pageSize}&queryFilter=${queryFilter}`
       : '/universities';
-    return this.request<PaginatedResult<University>>(url);
+    return this.request(url);
   }
 
   static async getUniversityById(id: string): Promise<ApiResult<University>> {
@@ -301,7 +301,7 @@ export class ApiService {
     return this.request(`${endpoint}?pageNumber=${pageNumber}&pageSize=${pageSize}`)
   }
 
-  static async getEventById(id: string) {
+  static async getEventById(id: string): Promise<ApiResult<Event>> {
     return this.request(`/event-by-id/${id}`)
   }
 

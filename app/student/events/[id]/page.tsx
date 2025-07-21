@@ -73,7 +73,7 @@ export default function EventDetailPage() {
           message:  'Successfully registered for the event!'
         })
         // Update local state
-        setEvent(prev => prev ? { ...prev, isRegistered: true, currentParticipants: (prev.currentParticipants || 0) + 1 } : null)
+        setEvent(prev => prev ? { ...prev, isRegistered: true } : null)
       } else {
         setRegistrationStatus({
           type: 'error',

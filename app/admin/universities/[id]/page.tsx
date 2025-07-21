@@ -645,7 +645,7 @@ export default function UniversityDetailPage() {
             onOpenChange={(open) => !open && setUpdatingScore(null)}
             majorId={updatingScore.majorId}
             majorName={updatingScore.majorName}
-            year={selectedYear}
+            year={selectedYear.toString()}
             initialGpaScore={updatingScore.gpaScore}
             initialExamScore={updatingScore.examScore}
             onSuccess={() => {
