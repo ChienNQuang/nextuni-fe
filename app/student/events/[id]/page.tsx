@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { StudentLayout } from "@/components/layouts/student-layout"
-import { ApiService } from "@/lib/api"
+import { ApiService, Event } from "@/lib/api"
 import { 
   Calendar,
   Clock,
@@ -22,29 +22,6 @@ import {
   Timer,
   AlertCircle
 } from "lucide-react"
-
-// Type definitions
-interface Event {
-  name: string
-  id: string
-  title: string
-  content: string
-  status: number
-  universityId: string
-  startDate: string
-  endDate: string
-  // Optional additional fields for enhanced functionality
-  registrationDeadline?: string
-  location?: string
-  maxParticipants?: number
-  currentParticipants?: number
-  organizerName?: string
-  category?: string
-  isRegistered?: boolean
-  registrationFee?: number
-  requirements?: string[]
-  contactInfo?: string
-}
 
 interface RegistrationResponse {
   success: boolean
@@ -93,14 +70,14 @@ export default function EventDetailPage() {
       if (response.isSuccess) {
         setRegistrationStatus({
           type: 'success',
-          message: response.message || 'Successfully registered for the event!'
+          message:  'Successfully registered for the event!'
         })
         // Update local state
         setEvent(prev => prev ? { ...prev, isRegistered: true, currentParticipants: (prev.currentParticipants || 0) + 1 } : null)
       } else {
         setRegistrationStatus({
           type: 'error',
-          message: response.message || 'Failed to register for the event'
+          message:  'Failed to register for the event'
         })
       }
     } catch (error) {
@@ -114,19 +91,7 @@ export default function EventDetailPage() {
   }
 
   const isEventActive = () => {
-    if (!event) return false
-    
-    const now = new Date()
-    const registrationDeadline = event.registrationDeadline ? new Date(event.registrationDeadline) : new Date(event.startDate)
-    const eventEnd = new Date(event.endDate)
-    
-    return (
-      event.status === 0 && // 0 = active
-      now <= registrationDeadline &&
-      now <= eventEnd &&
-      !event.isRegistered &&
-      (event.maxParticipants ? (event.currentParticipants || 0) < event.maxParticipants : true)
-    )
+    return true;
   }
 
   const getStatusBadge = (status: number) => {
@@ -151,45 +116,18 @@ export default function EventDetailPage() {
   const getEventStatusInfo = () => {
     if (!event) return { text: '', color: '', icon: null }
     
-    const now = new Date()
-    const registrationDeadline = event.registrationDeadline ? new Date(event.registrationDeadline) : new Date(event.startDate)
-    const eventStart = new Date(event.startDate)
-    const eventEnd = new Date(event.endDate)
-    
-    // Status: 0 = published, 1 = ongoing, 2 = cancelled, 3 = completed
-    if (event.status === 2) {
-      return { text: 'Cancelled', color: 'bg-red-100 text-red-800', icon: XCircle }
+    switch (event.status) {
+      case 0:
+        return { text: 'Published', color: 'bg-green-100 text-green-800', icon: CalendarDays }
+      case 1:
+        return { text: 'Ongoing', color: 'bg-blue-100 text-blue-800', icon: CalendarDays }
+      case 2:
+        return { text: 'Cancelled', color: 'bg-red-100 text-red-800', icon: XCircle }
+      case 3:
+        return { text: 'Completed', color: 'bg-gray-100 text-gray-800', icon: CheckCircle }
+      default:
+        return { text: 'Unknown', color: 'bg-gray-100 text-gray-800', icon: AlertCircle }
     }
-    
-    if (event.status === 3 || now > eventEnd) {
-      return { text: 'Completed', color: 'bg-gray-100 text-gray-800', icon: CheckCircle }
-    }
-    
-    if (now > registrationDeadline) {
-      return { text: 'Registration Closed', color: 'bg-orange-100 text-orange-800', icon: Timer }
-    }
-    
-    if (event.maxParticipants && (event.currentParticipants || 0) >= event.maxParticipants) {
-      return { text: 'Full', color: 'bg-yellow-100 text-yellow-800', icon: Users }
-    }
-    
-    if (event.isRegistered) {
-      return { text: 'Registered', color: 'bg-green-100 text-green-800', icon: CheckCircle }
-    }
-    
-    if (event.status === 1) {
-      return { text: 'Ongoing', color: 'bg-blue-100 text-blue-800', icon: CalendarDays }
-    }
-    
-    if (event.status === 0 && now < eventStart) {
-      return { text: 'Published', color: 'bg-green-100 text-green-800', icon: CalendarDays }
-    }
-    
-    if (event.status === 0) {
-      return { text: 'Open for Registration', color: 'bg-green-100 text-green-800', icon: CheckCircle }
-    }
-    
-    return { text: 'Unknown', color: 'bg-gray-100 text-gray-800', icon: AlertCircle }
   }
 
   const formatDate = (dateString: string) => {
@@ -282,17 +220,9 @@ export default function EventDetailPage() {
                     <Calendar className="h-6 w-6 text-primary" />
                     {StatusIcon && <StatusIcon className="h-5 w-5 text-gray-500" />}
                     <Badge className={statusInfo.color}>{statusInfo.text}</Badge>
-                    {event.category && (
-                      <Badge variant="outline">{event.category}</Badge>
-                    )}
                   </div>
                   <CardTitle className="text-2xl md:text-3xl mb-2">{event.title}</CardTitle>
                   <CardDescription className="text-base mb-1">{event.name}</CardDescription>
-                  {event.organizerName && (
-                    <CardDescription className="text-sm text-gray-600">
-                      Organized by {event.organizerName}
-                    </CardDescription>
-                  )}
                 </div>
                 {isEventActive() && (
                   <Button 
@@ -326,69 +256,6 @@ export default function EventDetailPage() {
               </CardContent>
             </Card>
 
-            {/* Registration Deadline */}
-            {event.registrationDeadline && (
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center space-x-3">
-                    <Timer className="h-5 w-5 text-orange-500" />
-                    <div>
-                      <p className="text-sm text-gray-500">Registration Deadline</p>
-                      <p className="font-medium">{formatDateTime(event.registrationDeadline)}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Location */}
-            {event.location && (
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center space-x-3">
-                    <MapPin className="h-5 w-5 text-red-500" />
-                    <div>
-                      <p className="text-sm text-gray-500">Location</p>
-                      <p className="font-medium">{event.location}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Participants */}
-            {event.maxParticipants && (
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center space-x-3">
-                    <Users className="h-5 w-5 text-blue-500" />
-                    <div>
-                      <p className="text-sm text-gray-500">Participants</p>
-                      <p className="font-medium">
-                        {event.currentParticipants || 0} / {event.maxParticipants}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Registration Fee */}
-            {event.registrationFee !== undefined && (
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center space-x-3">
-                    <Calendar className="h-5 w-5 text-green-500" />
-                    <div>
-                      <p className="text-sm text-gray-500">Registration Fee</p>
-                      <p className="font-medium">
-                        {event.registrationFee === 0 ? 'Free' : `$${event.registrationFee}`}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
           </div>
 
           {/* Event Content */}
@@ -402,37 +269,6 @@ export default function EventDetailPage() {
               </div>
             </CardContent>
           </Card>
-
-          {/* Requirements */}
-          {event.requirements && event.requirements.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Requirements</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2">
-                  {event.requirements.map((requirement, index) => (
-                    <li key={index} className="flex items-start space-x-2">
-                      <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                      <span className="text-sm">{requirement}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Contact Information */}
-          {event.contactInfo && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Contact Information</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-700">{event.contactInfo}</p>
-              </CardContent>
-            </Card>
-          )}
 
           {/* Registration Button (Mobile) */}
           {isEventActive() && (
