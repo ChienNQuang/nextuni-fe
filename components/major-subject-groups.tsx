@@ -14,16 +14,19 @@ interface SubjectGroup {
 
 interface MajorSubjectGroupsProps {
   readonly majorId: string
-  readonly subjectGroups: SubjectGroup[]
+  readonly subjectGroupByYear?: Record<string, Array<{
+    id: string
+    code: string
+  }>>
   readonly initialYear: number
   readonly onUpdate: (year: number, groups: string[]) => Promise<void>
 }
 
 export function MajorSubjectGroups({ 
   majorId, 
-  subjectGroups,
+  subjectGroupByYear,
   initialYear,
-  onUpdate 
+  onUpdate,
 }: Readonly<MajorSubjectGroupsProps>) {
   const [selectedYear, setSelectedYear] = useState<number>(initialYear)
   const [selectedGroups, setSelectedGroups] = useState<string[]>([])
@@ -56,8 +59,8 @@ export function MajorSubjectGroups({
 
   // Update selected groups when year changes
   useEffect(() => {
-    setSelectedGroups(subjectGroups.map(g => g.id))
-  }, [subjectGroups, selectedYear])
+    setSelectedGroups(subjectGroupByYear?.[selectedYear]?.map(g => g.id) || [])
+  }, [subjectGroupByYear, selectedYear])
 
   const handleSave = async () => {
     if (selectedGroups.length === 0) {

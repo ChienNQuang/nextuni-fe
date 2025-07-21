@@ -452,7 +452,7 @@ export default function UniversityDetailPage() {
                           <h4 className="font-medium mb-4">Subject Group Management</h4>
                           <MajorSubjectGroups 
                             majorId={major.id}
-                            subjectGroups={major.subjectGroupByYear?.[selectedYear] || []}
+                            subjectGroupByYear={major.subjectGroupByYear|| {}}
                             initialYear={selectedYear}
                             onUpdate={(year, groups) => handleUpdateSubjectGroups(major.id, year, groups)}
                           />
