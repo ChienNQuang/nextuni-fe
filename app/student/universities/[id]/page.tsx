@@ -33,17 +33,15 @@ export default function UniversityDetailPage() {
   const [university, setUniversity] = useState<University | null>(null)
   const [majors, setMajors] = useState<Major[]>([])
   const [selectedMajor, setSelectedMajor] = useState<Major | null>(null)
-  const [subjectCombinations, setSubjectCombinations] = useState<SubjectGroup[]>([])
-  const [majorIntroductionBlogs, setMajorIntroductionBlogs] = useState<{ 
-    title: string;
-     content: string;
-      majorId: string;
-     }[]>([]);
   const [admissionScores, setAdmissionScores] = useState<AdmissionScore[]>([])
   const [advisoryArticles, setAdvisoryArticles] = useState<CounsellingArticle[]>([])
   const [title, setTitle] = useState<string>("")
   const [content, setContent] = useState<string>("")
   const [selectedArticle, setSelectedArticle] = useState<CounsellingArticle | null>(null)
+  const [majorIntroductionBlog, setMajorIntroductionBlog] = useState<{ 
+    title: string;
+    content: string;
+  } | null>(null)
   
   // UI states
   const [loading, setLoading] = useState(true)
@@ -85,13 +83,6 @@ export default function UniversityDetailPage() {
       const articlesResponse = await ApiService.getUniversityConsellingArticles(String(universityId), "Published", 1, 100)
       setAdvisoryArticles(articlesResponse.data?.items || [])
 
-      majors.forEach(async major => {
-        const articleResponse = await ApiService.getMajorIntroductionBlog(String(major.id))
-        if (articleResponse.data) {
-          setMajorIntroductionBlogs(prev => [...prev, { title: articleResponse.data?.title || "", content: articleResponse.data?.content || "", majorId: major.id }])
-        }
-      });
-      
     } catch (error) {
       console.error("Failed to fetch university data:", error)
     } finally {
@@ -99,6 +90,24 @@ export default function UniversityDetailPage() {
     }
   }
 
+  useEffect(() => {
+    if (selectedMajor) {
+      fetchMajorIntroductionBlog()
+    }
+  }, [selectedMajor])
+
+  const fetchMajorIntroductionBlog = async () => {
+    try {
+      if (!selectedMajor) return
+      setLoading(true)
+      const response = await ApiService.getMajorIntroductionBlog(String(selectedMajor.id))
+      setMajorIntroductionBlog({ title: response.data?.title || "", content: response.data?.content || "" })
+    } catch (error) {
+      console.error("Failed to fetch major introduction blog:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleMajorSelect = async (major: Major) => {
     setSelectedMajor(major)
@@ -145,11 +154,6 @@ export default function UniversityDetailPage() {
   const formatScore = (min: number, max: number) => {
     if (min === 0 && max === 0) return "0 - 0"
     return `${min} - ${max}`
-  }
-
-  const getMajorIntroductionBlog = (majorId: string) => {
-    const blog = majorIntroductionBlogs.find(blog => blog.majorId === majorId)
-    return blog
   }
 
   if (loading) {
@@ -322,18 +326,6 @@ export default function UniversityDetailPage() {
                         <GraduationCap className="h-5 w-5" />
                         <span>Major Details</span>
                       </span>
-                      {selectedMajor && (
-                        <Select value={selectedYear.toString()} onValueChange={handleYearChange}>
-                          <SelectTrigger className="w-32">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {availableYears.map(year => (
-                              <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -344,7 +336,6 @@ export default function UniversityDetailPage() {
                           <p className="text-sm text-gray-500 mb-3">{selectedMajor.code}</p>
                           
                           {majors && (() => {
-                            const majorIntroductionBlog = getMajorIntroductionBlog(selectedMajor.id)
                             return majorIntroductionBlog && (
                               <div>
                                 <h5 className="font-medium mb-2">{majorIntroductionBlog.title}</h5>
@@ -359,22 +350,33 @@ export default function UniversityDetailPage() {
                         <Separator />
 
                         <div>
-                          <h5 className="font-medium mb-3">Subject Combinations ({selectedYear})</h5>
-                          {subjectCombinations.length > 0 ? (
+                          <div className="flex items-center justify-between space-x-2">
+                            <h5 className="font-medium">Subject Groups ({selectedYear})</h5>
+                            {selectedMajor && (
+                              <Select value={selectedYear.toString()} onValueChange={handleYearChange}>
+                                <SelectTrigger className="w-32">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {availableYears.map(year => (
+                                    <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            )}
+                          </div>
+                          {selectedMajor.subjectGroupByYear?.[selectedYear] ? (
                             <div className="space-y-2">
-                              {subjectCombinations.map((combination) => (
-                                <div key={combination.id} className="p-3 bg-gray-50 rounded-lg">
+                              {selectedMajor.subjectGroupByYear?.[selectedYear].map((subjectGroup) => (
+                                <div key={subjectGroup.id} className="p-3 bg-gray-50 rounded-lg">
                                   <div className="flex flex-wrap gap-2 mb-2">
-                                    {combination.subjects.map((subject, index) => (
-                                      <Badge key={index} variant="secondary">{subject.name}</Badge>
-                                    ))}
+                                    <Badge key={subjectGroup.id} variant="secondary">{subjectGroup.code}</Badge>
                                   </div>
-                                  <p className="text-sm text-gray-600">{combination.subjects.length}</p>
                                 </div>
                               ))}
                             </div>
                           ) : (
-                            <p className="text-sm text-gray-500">No subject combinations available for {selectedYear}</p>
+                            <p className="text-sm text-gray-500">No subject groups available for {selectedYear}</p>
                           )}
                         </div>
                       </div>
